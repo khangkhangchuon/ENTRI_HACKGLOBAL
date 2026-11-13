@@ -31,6 +31,10 @@ A judge who checks the source will find the 20% figure. Options:
 
 The video already says "over 37%", so options A and C would make the site differ from the video.
 
-## Not yet verified
+## Verification status
 
-I have not read the full text of sources 2 and 3 myself. Their figures above come from the publishers' own summaries in search results. I will open both before Phase 1 copy is finalised.
+All four sources were opened and read on 13 November 2026. The homelessness source says "almost 10 times more likely", and the site uses that wording. Chuon approved the 20% Minnesota figure (option A).
+
+## Worldwide release figure
+
+Not included. One search found no figure from an authoritative source such as UNODC, Penal Reform International or the World Prison Brief. It will only be added if a solid source turns up.

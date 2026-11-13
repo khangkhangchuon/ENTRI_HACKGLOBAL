@@ -52,7 +52,7 @@ export function LoopDiagram({ className }: { className?: string }) {
               x={a.x}
               y={a.y}
               textAnchor={a.anchor}
-              className="fill-slate-soft text-[15px] italic"
+              className="fill-dusk-600 text-[15px] italic"
             >
               {a.label}
             </text>
@@ -68,7 +68,7 @@ export function LoopDiagram({ className }: { className?: string }) {
               x={p.x}
               y={p.y + 6}
               textAnchor="middle"
-              className="fill-slate-ink font-display text-[19px]"
+              className="fill-dusk-900 font-display text-[19px]"
             >
               {n.label}
             </text>

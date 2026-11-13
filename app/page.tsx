@@ -98,53 +98,125 @@ function FeatureList({ items }: { items: typeof FOR_PEOPLE }) {
   );
 }
 
+// The numbered label and rule that open each main section, so a visitor
+// always knows which part of the story they are in.
+function SectionHeader({
+  number,
+  label,
+  title,
+  intro,
+  warm = false,
+}: {
+  number: string;
+  label: string;
+  title: string;
+  intro?: string;
+  warm?: boolean;
+}) {
+  return (
+    <header>
+      <div
+        className={`flex items-center gap-4 border-t-2 pt-5 ${
+          warm ? "border-ember-500" : "border-dusk-900/30"
+        }`}
+      >
+        <span className={`font-display text-2xl ${warm ? "text-ember-600" : "text-dusk-600"}`}>
+          {number}
+        </span>
+        <span
+          className={`text-sm font-semibold uppercase tracking-widest ${
+            warm ? "text-ember-700" : "text-dusk-600"
+          }`}
+        >
+          {label}
+        </span>
+      </div>
+      <h2 className="mt-6 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">{title}</h2>
+      {intro ? (
+        <p className={`mt-4 max-w-2xl text-xl ${warm ? "text-ink-soft" : "text-dusk-600"}`}>
+          {intro}
+        </p>
+      ) : null}
+    </header>
+  );
+}
+
+const NAV = [
+  { href: "#problem", label: "The problem" },
+  { href: "#solution", label: "The solution" },
+];
+
 export default function LandingPage() {
   return (
     // One long background that starts cool and grey and warms as you scroll.
-    <main className="bg-[linear-gradient(to_bottom,#d9dee3_0%,#e2e5e8_18%,#eae9e7_40%,#f3eee6_58%,#fbf7f0_74%,#fbeedd_100%)] text-slate-ink">
-      {/* 1. Hook */}
-      <section className="mx-auto flex min-h-svh max-w-6xl flex-col px-5 pb-10 pt-6">
-        <EntriLogo className="text-slate-ink grayscale" />
-        <div className="flex max-w-4xl flex-1 flex-col justify-center py-12">
-          <p className="text-sm font-semibold uppercase tracking-widest text-slate-soft">
-            Prison reentry in New York City
-          </p>
-          <h1 className="mt-5 font-display text-3xl leading-snug sm:text-4xl md:text-[2.75rem] md:leading-[1.25]">
-            Every year, hundreds of thousands of people walk out of prison and have to rebuild a
-            life from almost nothing: a job, a place to live, an ID, a way to eat.
-          </h1>
-          <p className="mt-6 max-w-3xl text-xl leading-relaxed text-slate-soft sm:text-2xl">
-            The programs that help with all of that already exist. They&apos;re just scattered,
-            and almost impossible to find.{" "}
-            <strong className="font-semibold text-slate-ink">
-              Entri is what we built to fix that.
-            </strong>
-          </p>
+    <main className="bg-[linear-gradient(to_bottom,#d9dee3_0%,#e2e5e8_18%,#eae9e7_40%,#f3eee6_58%,#fbf7f0_74%,#fbeedd_100%)] text-dusk-900">
+      {/* Navigation */}
+      <nav
+        aria-label="Page sections"
+        className="sticky top-0 z-20 border-b border-dusk-900/10 bg-white/55 backdrop-blur-md"
+      >
+        <div className="mx-auto flex max-w-6xl items-center gap-6 px-5 py-3">
+          <a href="#top" aria-label="Entri, back to top">
+            <EntriLogo size="sm" />
+          </a>
+          <div className="ml-auto hidden items-center gap-6 sm:flex">
+            {NAV.map((n) => (
+              <a key={n.href} href={n.href} className="text-dusk-600 hover:text-dusk-900">
+                {n.label}
+              </a>
+            ))}
+          </div>
+          <a
+            href="#demo"
+            className="ml-auto rounded-full bg-dusk-900 px-4 py-2 text-sm font-semibold text-white hover:bg-night-700 sm:ml-0"
+          >
+            Try the demo
+          </a>
         </div>
-        <a
-          href="#numbers"
-          className="inline-flex items-center gap-2 self-start text-slate-soft hover:text-slate-ink"
-        >
-          <ArrowDown className="h-5 w-5" aria-hidden />
-          See the problem
-        </a>
-      </section>
+      </nav>
 
-      {/* 2. Statistics */}
-      <section id="numbers" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-20">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-soft">
-          The numbers
-        </h2>
-        <dl className="mt-8 grid gap-12 md:grid-cols-3 md:gap-8">
+      {/* Hook */}
+      <section id="top" className="mx-auto max-w-6xl scroll-mt-20 px-5 pb-24 pt-16 sm:pt-24">
+        <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
+          Prison reentry in New York City
+        </p>
+        <h1 className="mt-5 max-w-4xl font-display text-3xl leading-snug sm:text-4xl md:text-[2.75rem] md:leading-[1.25]">
+          Every year, hundreds of thousands of people walk out of prison and have to rebuild a
+          life from almost nothing: a job, a place to live, an ID, a way to eat.
+        </h1>
+        <p className="mt-6 max-w-3xl text-xl leading-relaxed text-dusk-600 sm:text-2xl">
+          The programs that help with all of that already exist. They&apos;re just scattered, and
+          almost impossible to find.{" "}
+          <strong className="font-semibold text-dusk-900">
+            Entri is what we built to fix that.
+          </strong>
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <a
+            href="#demo"
+            className="inline-flex items-center gap-2 rounded-full bg-dusk-900 px-6 py-3.5 text-lg font-semibold text-white hover:bg-night-700"
+          >
+            Try the demo <ArrowRight className="h-5 w-5" aria-hidden />
+          </a>
+          <a
+            href="#problem"
+            className="inline-flex items-center gap-2 rounded-full border-2 border-dusk-900/30 px-6 py-3.5 text-lg font-semibold hover:border-dusk-900"
+          >
+            <ArrowDown className="h-5 w-5" aria-hidden />
+            Read the problem first
+          </a>
+        </div>
+
+        <dl id="numbers" className="mt-16 grid gap-5 md:grid-cols-3">
           {STATS.map((s) => (
-            <div key={s.source} className="flex flex-col border-t-2 border-slate-ink/20 pt-6">
-              <dt className="order-2 mt-3 text-lg text-slate-soft">{s.text}</dt>
-              <dd className="order-1 font-display text-6xl leading-none sm:text-7xl">
+            <div key={s.source} className="flex flex-col rounded-2xl bg-white/55 p-6 ring-1 ring-dusk-900/10">
+              <dt className="order-2 mt-3 text-lg text-dusk-600">{s.text}</dt>
+              <dd className="order-1 font-display text-6xl leading-none">
                 <CountUp value={s.value} suffix={s.suffix} />
               </dd>
-              <p className="order-3 mt-4 text-sm text-slate-soft">
+              <p className="order-3 mt-auto pt-4 text-sm text-dusk-600">
                 Source:{" "}
-                <a href={s.href} className="underline underline-offset-2 hover:text-slate-ink">
+                <a href={s.href} className="underline underline-offset-2 hover:text-dusk-900">
                   {s.source}
                 </a>
               </p>
@@ -153,18 +225,24 @@ export default function LandingPage() {
         </dl>
       </section>
 
-      {/* 3. The problem, dissected */}
-      <section className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="max-w-2xl font-display text-4xl sm:text-5xl">
-          Why starting over is so hard
-        </h2>
-        <div className="mt-12 grid items-start gap-12 lg:grid-cols-[1fr_420px]">
+      {/* 01 The problem */}
+      <section id="problem" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20">
+        <SectionHeader
+          number="01"
+          label="The problem"
+          title="Why starting over is so hard"
+          intro="Two things stand in the way. Each need depends on another one, and the help is spread across places that don't talk to each other."
+        />
+        <div className="mt-14 grid items-start gap-12 lg:grid-cols-[1fr_420px]">
           <div className="space-y-14">
             <div>
-              <h3 className="font-display text-2xl sm:text-3xl">
+              <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
+                Problem one
+              </p>
+              <h3 className="mt-2 font-display text-2xl sm:text-3xl">
                 Every need depends on another one
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-slate-soft">
+              <p className="mt-3 text-lg leading-relaxed text-dusk-600">
                 To rent a home, you need income. To get a job, you need an ID. To get an ID, you
                 often need an address. Each step asks for something you don&apos;t have yet, so
                 there is no clear place to begin.
@@ -172,10 +250,13 @@ export default function LandingPage() {
               <LoopDiagram className="mt-6 w-full max-w-md" />
             </div>
             <div>
-              <h3 className="font-display text-2xl sm:text-3xl">
+              <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
+                Problem two
+              </p>
+              <h3 className="mt-2 font-display text-2xl sm:text-3xl">
                 Help exists, but it is scattered
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-slate-soft">
+              <p className="mt-3 text-lg leading-relaxed text-dusk-600">
                 New York City has housing programs, job training, legal aid and benefits offices.
                 When that support is coordinated, it works.
               </p>
@@ -183,20 +264,20 @@ export default function LandingPage() {
                 <CountUp
                   value={20}
                   suffix="%"
-                  className="font-display text-5xl text-slate-ink sm:text-6xl"
+                  className="font-display text-5xl text-dusk-900 sm:text-6xl"
                 />
-                <span className="text-slate-soft">
+                <span className="text-dusk-600">
                   lower risk of rearrest with coordinated reentry support, in a randomized
                   Minnesota study.{" "}
                   <a
                     href="https://www.lrl.mn.gov/docs/2014/other/140531.pdf"
-                    className="text-sm underline underline-offset-2 hover:text-slate-ink"
+                    className="text-sm underline underline-offset-2 hover:text-dusk-900"
                   >
                     Source: Minnesota Department of Corrections, 2013
                   </a>
                 </span>
               </p>
-              <p className="mt-5 text-lg leading-relaxed text-slate-soft">
+              <p className="mt-5 text-lg leading-relaxed text-dusk-600">
                 Today these services sit in separate organizations that can&apos;t see each other.
                 A returning citizen often never finds them. A housing nonprofit can&apos;t see
                 which job or legal services exist for the same person. A caseworker with a large
@@ -205,46 +286,62 @@ export default function LandingPage() {
               <Dots className="mt-8 w-full max-w-lg" />
             </div>
           </div>
-          <PhotoRotator className="lg:sticky lg:top-8" />
-        </div>
-      </section>
-
-      {/* 4. The main problem */}
-      <section className="mx-auto max-w-4xl px-5 py-28 text-center">
-        <p className="text-sm font-semibold uppercase tracking-widest text-slate-soft">
-          The real problem
-        </p>
-        <p className="mt-5 font-display text-4xl leading-tight sm:text-6xl">
-          The help exists, but nothing connects it.
-        </p>
-      </section>
-
-      {/* 5. Introducing Entri */}
-      <section className="mx-auto max-w-6xl px-5 py-20 text-ink">
-        <div className="text-center">
-          <Dots connected className="mx-auto w-full max-w-xl" />
-          <p className="mt-10 text-sm font-semibold uppercase tracking-widest text-ember-700">
-            Meet Entri
-          </p>
-          <h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">
-            One place that connects returning citizens, organizations and caseworkers
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-xl text-ink-soft">
-            Entri makes the help that already exists visible, ordered and connected. It starts in
-            New York City.
-          </p>
+          <PhotoRotator className="lg:sticky lg:top-24" />
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2">
+        <blockquote className="mt-20 border-l-4 border-dusk-900/40 py-2 pl-6 sm:pl-10">
+          <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
+            The real problem
+          </p>
+          <p className="mt-3 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">
+            The help exists, but nothing connects it.
+          </p>
+        </blockquote>
+      </section>
+
+      {/* 02 The solution */}
+      <section id="solution" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 text-ink">
+        <SectionHeader
+          warm
+          number="02"
+          label="The solution"
+          title="Entri connects returning citizens, organizations and caseworkers in one place"
+          intro="Entri makes the help that already exists visible, ordered and connected. It starts in New York City."
+        />
+
+        <div className="mt-12 grid items-center gap-4 rounded-3xl bg-white/70 p-6 ring-1 ring-sand-200 md:grid-cols-[1fr_1.4fr_1fr] sm:p-8">
+          <div className="text-center md:text-left">
+            <p className="font-display text-2xl">Returning citizens</p>
+            <p className="text-ink-soft">A step-by-step guide</p>
+          </div>
+          <div className="text-center">
+            <Dots connected className="mx-auto w-full" />
+            <p className="mt-2 text-sm font-semibold uppercase tracking-widest text-ember-700">
+              One shared network
+            </p>
+          </div>
+          <div className="text-center md:text-right">
+            <p className="font-display text-2xl">Organizations</p>
+            <p className="text-ink-soft">A dashboard that drafts the paperwork</p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="rounded-3xl bg-white/80 p-7 shadow-sm ring-1 ring-sand-200 sm:p-9">
-            <h3 className="font-display text-3xl">For returning citizens</h3>
+            <p className="text-sm font-semibold uppercase tracking-widest text-ember-700">
+              Side one
+            </p>
+            <h3 className="mt-2 font-display text-3xl">For returning citizens</h3>
             <p className="mt-2 text-lg text-ink-soft">
               The loop becomes a straight path, with one place to begin.
             </p>
             <FeatureList items={FOR_PEOPLE} />
           </div>
           <div className="rounded-3xl bg-white/80 p-7 shadow-sm ring-1 ring-sand-200 sm:p-9">
-            <h3 className="font-display text-3xl">For organizations and caseworkers</h3>
+            <p className="text-sm font-semibold uppercase tracking-widest text-ember-700">
+              Side two
+            </p>
+            <h3 className="mt-2 font-display text-3xl">For organizations and caseworkers</h3>
             <p className="mt-2 text-lg text-ink-soft">
               Less paperwork, a clear view of every client, and one shared network.
             </p>
@@ -261,12 +358,15 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* 6. Choose a demo */}
-      <section id="demo" className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24 pt-16 text-ink">
-        <h2 className="text-center font-display text-4xl sm:text-5xl">Try Entri yourself</h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-xl text-ink-soft">
-          Choose a side. You can switch to the other one at any time.
-        </p>
+      {/* 03 Try the demo */}
+      <section id="demo" className="mx-auto max-w-6xl scroll-mt-20 px-5 pb-24 pt-20 text-ink">
+        <SectionHeader
+          warm
+          number="03"
+          label="Try the demo"
+          title="Try Entri yourself"
+          intro="Choose a side. You can switch to the other one at any time."
+        />
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           <DemoCard
             href="/app"
@@ -290,7 +390,7 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* 7. Footer */}
+      {/* Footer */}
       <footer className="border-t border-sand-300/70 text-ink">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>

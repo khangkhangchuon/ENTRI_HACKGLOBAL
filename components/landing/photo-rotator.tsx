@@ -66,7 +66,7 @@ export function PhotoRotator({ className }: { className?: string }) {
         <button
           type="button"
           onClick={() => setPlaying((p) => !p)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-slate-ink hover:bg-white"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-dusk-900 hover:bg-white"
           aria-label={playing ? "Pause the photos" : "Play the photos"}
         >
           {playing ? (
@@ -91,13 +91,13 @@ export function PhotoRotator({ className }: { className?: string }) {
               <span
                 className={clsx(
                   "h-2.5 rounded-full transition-all",
-                  i === index ? "w-6 bg-slate-ink" : "w-2.5 bg-mist-300",
+                  i === index ? "w-6 bg-dusk-900" : "w-2.5 bg-mist-300",
                 )}
               />
             </button>
           ))}
         </div>
-        <figcaption className="ml-auto text-right text-sm text-slate-soft">
+        <figcaption className="ml-auto text-right text-sm text-dusk-600">
           Photos are illustrative. The people shown are not connected to Entri.
         </figcaption>
       </div>

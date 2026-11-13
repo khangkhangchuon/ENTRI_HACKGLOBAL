@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+  Entri brand tokens.
+  Cold tones tell the problem. Warm tones are Entri itself.
+  One accent, ember, marks the next step and the dot in the logo.
+*/
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* Cold: the gate, the loop, the scattered dots */
+  --color-night-950: #0b1015;
+  --color-night-900: #111920;
+  --color-night-800: #1a242d;
+  --color-night-700: #26323d;
+  --color-steel-500: #5f6e7b;
+  --color-steel-300: #a7b2bc;
+  --color-steel-100: #dce2e7;
+
+  /* Warm: Entri */
+  --color-paper: #fbf7f0;
+  --color-sand-100: #f4ecdf;
+  --color-sand-200: #e9dcc8;
+  --color-sand-300: #d8c7ae;
+  --color-ink: #261d15;
+  --color-ink-soft: #5a4c3f;
+
+  /* Ember: the single accent */
+  --color-ember-100: #fbe6d3;
+  --color-ember-400: #e68a45;
+  --color-ember-500: #d9722a;
+  --color-ember-600: #b4571a;
+  --color-ember-700: #8f4313;
+
+  /* Moss: done */
+  --color-moss-100: #deeee4;
+  --color-moss-600: #2f6b4f;
+  --color-moss-700: #245440;
+
+  /* Amber: calm attention, never alarm */
+  --color-amber-100: #fcefcf;
+  --color-amber-300: #f0cf80;
+  --color-amber-700: #8a5a06;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* A visible focus ring everywhere, for keyboard users. */
+:focus-visible {
+  outline: 3px solid var(--color-ember-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

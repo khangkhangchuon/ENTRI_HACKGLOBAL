@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { EntriLogo } from "@/components/brand/logo";
+import { ConnectScene } from "@/components/landing/connect-scene";
 import { CountUp } from "@/components/landing/count-up";
 import { Dots } from "@/components/landing/dots";
 import { LoopDiagram } from "@/components/landing/loop-diagram";
@@ -148,8 +149,9 @@ const NAV = [
 
 export default function LandingPage() {
   return (
-    // One long background that starts cool and grey and warms as you scroll.
-    <main className="bg-[linear-gradient(to_bottom,#d9dee3_0%,#e2e5e8_18%,#eae9e7_40%,#f3eee6_58%,#fbf7f0_74%,#fbeedd_100%)] text-dusk-900">
+    // The page is cool and grey through the problem. It lights up in the
+    // scene where Entri connects everything, and stays warm after that.
+    <main className="bg-[#ccd3da] text-dusk-900">
       {/* Navigation */}
       <nav
         aria-label="Page sections"
@@ -175,10 +177,11 @@ export default function LandingPage() {
         </div>
       </nav>
 
+      <div className="bg-[linear-gradient(to_bottom,#e3e6e9_0%,#d9dee3_50%,#ccd3da_100%)]">
       {/* Hook */}
       <section id="top" className="mx-auto max-w-6xl scroll-mt-20 px-5 pb-24 pt-16 sm:pt-24">
         <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
-          Prison reentry in New York City
+          Prison reentry
         </p>
         <h1 className="mt-5 max-w-4xl font-display text-3xl leading-snug sm:text-4xl md:text-[2.75rem] md:leading-[1.25]">
           Every year, hundreds of thousands of people walk out of prison and have to rebuild a
@@ -257,8 +260,9 @@ export default function LandingPage() {
                 Help exists, but it is scattered
               </h3>
               <p className="mt-3 text-lg leading-relaxed text-dusk-600">
-                New York City has housing programs, job training, legal aid and benefits offices.
-                When that support is coordinated, it works.
+                Organizations already exist to help returning citizens with housing, job
+                training, legal aid and benefits. Many of them never reach the people they were
+                built for. When that support is coordinated, it works.
               </p>
               <p className="mt-5 flex items-center gap-5 rounded-2xl bg-white/60 p-5">
                 <CountUp
@@ -283,13 +287,12 @@ export default function LandingPage() {
                 which job or legal services exist for the same person. A caseworker with a large
                 caseload can&apos;t easily tell who is falling behind.
               </p>
-              <Dots className="mt-8 w-full max-w-lg" />
             </div>
           </div>
           <PhotoRotator className="lg:sticky lg:top-24" />
         </div>
 
-        <blockquote className="mt-20 border-l-4 border-dusk-900/40 py-2 pl-6 sm:pl-10">
+        <blockquote className="mt-20 mb-8 border-l-4 border-dusk-900/40 py-2 pl-6 sm:pl-10">
           <p className="text-sm font-semibold uppercase tracking-widest text-dusk-600">
             The real problem
           </p>
@@ -299,6 +302,12 @@ export default function LandingPage() {
         </blockquote>
       </section>
 
+      </div>
+
+      {/* The turn: scattered, then connected */}
+      <ConnectScene />
+
+      <div className="bg-[linear-gradient(to_bottom,#fbf7f0_0%,#fbf3e6_60%,#fbeedd_100%)]">
       {/* 02 The solution */}
       <section id="solution" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 text-ink">
         <SectionHeader
@@ -306,7 +315,7 @@ export default function LandingPage() {
           number="02"
           label="The solution"
           title="Entri connects returning citizens, organizations and caseworkers in one place"
-          intro="Entri makes the help that already exists visible, ordered and connected. It starts in New York City."
+          intro="Entri makes the help that already exists visible, ordered and connected, so it reaches the people it was built for."
         />
 
         <div className="mt-12 grid items-center gap-4 rounded-3xl bg-white/70 p-6 ring-1 ring-sand-200 md:grid-cols-[1fr_1.4fr_1fr] sm:p-8">
@@ -434,6 +443,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      </div>
     </main>
   );
 }

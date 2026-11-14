@@ -19,7 +19,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Entri: a place to begin",
   description:
-    "Entri connects people leaving prison, the organizations that help them, and the caseworkers who guide them, in one network for New York City.",
+    "Entri connects returning citizens, the organizations built to help them, and the caseworkers who guide them, in one network.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

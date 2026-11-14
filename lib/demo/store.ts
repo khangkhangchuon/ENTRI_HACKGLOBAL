@@ -6,6 +6,7 @@ import { buildSeed, MAIN_CLIENT_ID, SEED_EPOCH } from "./seed";
 import type {
   Activity,
   ActivityKind,
+  Borough,
   Client,
   DemoData,
   PlanStep,
@@ -18,7 +19,7 @@ import type {
 // storage, so a Diane tab and a Marcus tab read and write the same data.
 // Every action that crosses sides also writes to the activity feed.
 
-export const STORAGE_KEY = "entri-demo-v1";
+export const STORAGE_KEY = "entri-demo-v2";
 
 interface DemoActions {
   resetDemo: () => void;
@@ -28,7 +29,7 @@ interface DemoActions {
     draft: {
       plan: Omit<PlanStep, "status" | "completedAt">[];
       profile?: Partial<
-        Pick<Client, "summary" | "goal" | "needs" | "skills" | "keepInMind" | "documents">
+        Pick<Client, "summary" | "goal" | "needs" | "skills" | "keepInMind" | "documents" | "borough">
       >;
     },
   ) => void;
@@ -39,6 +40,14 @@ interface DemoActions {
   toggleSaved: (resourceId: string) => void;
   tellCaseworker: (clientId: string, resourceId: string) => void;
   addResource: (resource: Omit<Resource, "id">) => void;
+  updateResource: (resourceId: string, changes: Partial<Omit<Resource, "id">>) => void;
+  createClient: (input: {
+    firstName: string;
+    lastName: string;
+    borough: Borough;
+    intakeNotes: string;
+  }) => string;
+  removeStep: (clientId: string, stepId: string) => void;
   createReferral: (input: {
     clientId: string;
     resourceId: string;
@@ -247,6 +256,74 @@ export const useDemo = create<DemoState>()(
             ...state.activity,
           ],
         })),
+
+      updateResource: (resourceId, changes) =>
+        set((state) => ({
+          resources: state.resources.map((r) =>
+            r.id === resourceId ? { ...r, ...changes } : r,
+          ),
+        })),
+
+      createClient: ({ firstName, lastName, borough, intakeNotes }) => {
+        const id = uid("cl");
+        const now = nowIso();
+        const client: Client = {
+          id,
+          firstName,
+          lastName,
+          borough,
+          createdAt: now,
+          releasedOn: now,
+          status: "new",
+          summary: "",
+          goal: "",
+          needs: [],
+          skills: [],
+          documents: [],
+          keepInMind: [],
+          lastCheckIn: now,
+          planStatus: "none",
+          plan: [],
+          intakeNotes,
+          caseNotes: [],
+          sharing: {
+            [get().homeOrgId]: { profile: true, plan: true, progress: true },
+          },
+        };
+        set((state) => ({
+          clients: [client, ...state.clients],
+          activity: [
+            entry("intake", `${firstName} joined your caseload.`, id),
+            ...state.activity,
+          ],
+        }));
+        return id;
+      },
+
+      // Removes a step that is not done yet. If it was the current step,
+      // the next one becomes current.
+      removeStep: (clientId, stepId) => {
+        const client = get().clients.find((c) => c.id === clientId);
+        const step = client?.plan.find((s) => s.id === stepId);
+        if (!client || !step || step.status === "done") return;
+        const rest = client.plan.filter((s) => s.id !== stepId);
+        const hasCurrent = rest.some((s) => s.status === "current");
+        let promoted = false;
+        const plan = rest.map((s): PlanStep => {
+          if (!hasCurrent && !promoted && s.status === "locked") {
+            promoted = true;
+            return { ...s, status: "current" };
+          }
+          return s;
+        });
+        set((state) => ({
+          clients: mapClient(state, clientId, (c) => ({ ...c, plan })),
+          activity: [
+            entry("plan-edited", `You removed "${step.title}" from ${client.firstName}'s plan.`, clientId),
+            ...state.activity,
+          ],
+        }));
+      },
 
       createReferral: ({ clientId, resourceId, shared, note }) => {
         const client = get().clients.find((c) => c.id === clientId);

@@ -207,3 +207,28 @@ export const BOROUGHS: Borough[] = [
   "Bronx",
   "Staten Island",
 ];
+
+// Short labels for chips and filters.
+export const NEED_CHIPS: Record<Need, string> = {
+  id: "ID",
+  phone: "Phone",
+  banking: "Bank account",
+  benefits: "Benefits",
+  housing: "Housing",
+  jobs: "Work",
+  training: "Job training",
+  "primary-care": "Primary care",
+  "mental-health": "Counseling",
+  "substance-use": "Substance-use support",
+  legal: "Legal help",
+};
+
+// The kinds of help each resource type can offer.
+export const CATEGORY_NEEDS: Record<Category, Need[]> = {
+  jobs: ["jobs"],
+  housing: ["housing"],
+  health: ["primary-care", "mental-health", "substance-use"],
+  legal: ["legal"],
+  "id-benefits": ["id", "phone", "banking", "benefits"],
+  training: ["training"],
+};

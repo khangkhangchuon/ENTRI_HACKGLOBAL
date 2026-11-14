@@ -111,6 +111,50 @@ const STEP_TEMPLATES: StepTemplate[] = [
   },
 ];
 
+// A draft written ahead of time for Marcus. Smart Intake shows it only when
+// the AI cannot be reached, so the demo can still continue.
+export const MARCUS_SAVED_DRAFT = {
+  firstName: "Marcus",
+  lastName: "Bell",
+  borough: "Brooklyn" as Borough,
+  summary:
+    "Released last week after about six years. Staying with a cousin in Brooklyn for now. Has his birth certificate and release papers but no state ID, no phone of his own and no bank account.",
+  goal: "Steady work and a place of my own.",
+  needs: ["id", "phone", "banking", "benefits", "housing", "jobs"] as Need[],
+  skills: ["Warehouse work", "Forklift (needs new certificate)", "Kitchen work, two years"],
+  documents: ["Birth certificate", "Release papers"],
+  keepInMind: [
+    "Prefers phone calls to texts. Mornings are best.",
+    "The stay with his cousin is temporary. Housing matters soon.",
+    "Worried about explaining the gap in his work history.",
+  ],
+  matches: [
+    {
+      resourceId: "res-bbrc-id",
+      reason: "Marcus has his birth certificate and release papers, which is what the ID form asks for.",
+    },
+    {
+      resourceId: "res-hearth-brooklyn",
+      reason: "The stay with his cousin is temporary, so a room of his own matters soon.",
+    },
+    {
+      resourceId: "res-commontable-cook",
+      reason: "He cooked in a kitchen for two years and liked the work.",
+    },
+    {
+      resourceId: "res-atlas-warehouse",
+      reason: "He has warehouse experience, and this employer is a fair-chance employer.",
+    },
+  ],
+  steps: STEP_TEMPLATES.map((t) => ({
+    title: t.title,
+    what: t.what,
+    where: t.where,
+    bring: t.bring,
+    resourceIds: t.resourceIds,
+  })),
+};
+
 export function buildSeed(now: Date): DemoData {
   const at = (daysAgo: number, hour = 11, minute = 0) => {
     const d = new Date(now);
@@ -156,36 +200,27 @@ export function buildSeed(now: Date): DemoData {
 
   // ---- Anchor clients -------------------------------------------------
 
+  // Marcus starts where the story starts: he met Diane this morning and has
+  // no plan yet. The visitor drafts and approves it with Smart Intake.
   const marcus: Client = {
     id: MAIN_CLIENT_ID,
     firstName: "Marcus",
     lastName: "Bell",
     borough: "Brooklyn",
-    createdAt: at(3, 10),
+    createdAt: at(0, 10),
     releasedOn: at(8, 9),
-    status: "on-track",
-    summary:
-      "Released last week after about six years. Staying with a cousin in Brooklyn for now. Has his birth certificate and release papers but no state ID, no phone of his own and no bank account.",
-    goal: "Steady work and a place of my own.",
+    status: "new",
+    summary: "",
+    goal: "",
     needs: ["id", "phone", "banking", "benefits", "housing", "jobs"],
-    skills: ["Warehouse work", "Forklift (needs new certificate)", "Basic cooking"],
-    documents: ["Birth certificate", "Release papers"],
-    keepInMind: [
-      "Prefers phone calls to texts. Mornings are best.",
-      "The stay with his cousin is temporary. Housing matters soon.",
-      "Worried about explaining the gap in his work history.",
-    ],
-    lastCheckIn: at(1, 10, 30),
-    planStatus: "approved",
-    plan: buildPlan(MAIN_CLIENT_ID, 0, [], { id: { dueAt: inDays(5) } }),
+    skills: [],
+    documents: [],
+    keepInMind: [],
+    lastCheckIn: at(0, 10),
+    planStatus: "none",
+    plan: [],
     intakeNotes: MARCUS_INTAKE_NOTES,
-    caseNotes: [
-      {
-        id: "note-marcus-1",
-        at: at(3, 11),
-        text: "First meeting. Motivated and a little overwhelmed. We agreed to start with his state ID and meet again on Thursday.",
-      },
-    ],
+    caseNotes: [],
     sharing: { [HOME_ORG_ID]: HOME_SHARING },
   };
 
@@ -414,11 +449,11 @@ export function buildSeed(now: Date): DemoData {
       text: "Andre joined your caseload. His intake notes are ready for Smart Intake.",
     },
     {
-      id: "act-marcus-plan",
-      at: at(3, 11, 30),
-      kind: "plan-approved",
+      id: "act-marcus-intake",
+      at: at(0, 10),
+      kind: "intake",
       clientId: MAIN_CLIENT_ID,
-      text: "You approved Marcus's plan. He can now see his first step.",
+      text: "Marcus joined your caseload. His intake notes are ready for Smart Intake.",
     },
     {
       id: "act-tanya-referral",
@@ -433,20 +468,6 @@ export function buildSeed(now: Date): DemoData {
   );
 
   const messages: Message[] = [
-    {
-      id: "msg-1",
-      clientId: MAIN_CLIENT_ID,
-      from: "caseworker",
-      at: at(3, 12),
-      text: "Hi Marcus, it's Diane from Brooklyn Bridges. Your plan is ready in Entri. Your first step is your state ID. Come by on Thursday morning and I will help you with the form.",
-    },
-    {
-      id: "msg-2",
-      clientId: MAIN_CLIENT_ID,
-      from: "client",
-      at: at(3, 18, 20),
-      text: "Thank you. I have my birth certificate and my release papers. I will be there Thursday.",
-    },
     {
       id: "msg-3",
       clientId: "cl-jamal",

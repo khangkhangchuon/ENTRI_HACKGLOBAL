@@ -44,6 +44,9 @@ export async function handleAi<S extends z.ZodType, T>(
   request: Request,
   schema: S,
   run: (input: z.infer<S>) => Promise<T>,
+  // An answer that needs no AI. It is tried first, so it still works when
+  // the AI cannot be reached.
+  withoutAi?: (input: z.infer<S>) => T | null,
 ): Promise<Response> {
   const raw = await request.text().catch(() => "");
   if (!raw || raw.length > MAX_BODY_BYTES) return fail("invalid", 400);
@@ -56,6 +59,12 @@ export async function handleAi<S extends z.ZodType, T>(
   }
   const parsed = schema.safeParse(json);
   if (!parsed.success) return fail("invalid", 400);
+
+  const ready = withoutAi?.(parsed.data) ?? null;
+  if (ready !== null) {
+    const body: AiReply<T> = { ok: true, data: ready, generatedAt: new Date().toISOString() };
+    return Response.json(body);
+  }
 
   if (!hasKey()) return fail("unavailable", 503);
 

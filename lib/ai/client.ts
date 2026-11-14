@@ -64,6 +64,17 @@ export function tidy(text: string): string {
     .trim();
 }
 
+// The same clean-up for text that keeps its line breaks, such as a short
+// numbered list in a chat answer.
+export function tidyLines(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => tidy(line))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 // Rules every prompt shares.
 export const VOICE_RULES = `Writing rules:
 - Plain, calm, respectful language. Short sentences. No jargon.

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -35,7 +36,11 @@ export default function FindPage() {
   const organizations = useDemo((s) => s.organizations);
   const caseworker = useDemo((s) => s.caseworker);
   const connected = onCaseload(me);
-  const [category, setCategory] = useState<Category | null>(null);
+  // Other screens can open Find help on one kind of help, with ?c=legal.
+  const asked = useSearchParams().get("c") as Category | null;
+  const [category, setCategory] = useState<Category | null>(
+    asked && asked in CATEGORY_LABELS ? asked : null,
+  );
   const [query, setQuery] = useState("");
 
   const q = query.trim().toLowerCase();
@@ -144,6 +149,14 @@ export default function FindPage() {
               Nothing matches that yet. Try a shorter word, or ask Entri in your
               own words.
             </p>
+          )}
+          {results.length === 0 && (
+            <Link
+              href="/app/ask"
+              className="mt-3 inline-block font-semibold text-ember-700 underline"
+            >
+              Ask Entri
+            </Link>
           )}
         </>
       )}

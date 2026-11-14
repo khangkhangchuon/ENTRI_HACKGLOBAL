@@ -182,6 +182,68 @@ export const GapFindings = z.object({
 export type GapFindings = z.infer<typeof GapFindings>;
 export type GapFinding = GapFindings["findings"][number];
 
+// ---- Ask Entri -----------------------------------------------------------
+
+export const QUESTION_MAX = 500;
+
+export const AskListing = z.object({
+  id,
+  name: short,
+  org: short,
+  category: z.enum(CATEGORY_VALUES),
+  borough: z.enum(BOROUGH_VALUES),
+  offers: z.string().max(400),
+  address: z.string().max(200),
+  contact: z.string().max(200),
+  howToApply: z.string().max(400),
+  fairChance: z.boolean().optional(),
+});
+export type AskListing = z.infer<typeof AskListing>;
+
+export const AskRequest = z.object({
+  question: z.string().trim().min(2).max(QUESTION_MAX),
+  // The last few turns, so a follow-up question makes sense.
+  history: z
+    .array(z.object({ role: z.enum(["user", "entri"]), text: z.string().max(1200) }))
+    .max(6),
+  context: z.object({
+    firstName: z.string().max(40),
+    borough: z.enum(BOROUGH_VALUES),
+    currentStep: short.nullable(),
+    hasCaseworker: z.boolean(),
+  }),
+  listings: z.array(AskListing).max(80),
+});
+export type AskRequest = z.infer<typeof AskRequest>;
+
+export const ASK_KINDS = ["answer", "legal", "unknown", "off-topic", "crisis"] as const;
+export type AskKind = (typeof ASK_KINDS)[number];
+
+// What the model writes.
+export const AskDraft = z.object({
+  kind: z.enum(ASK_KINDS),
+  text: z.string(),
+  sourceIds: z.array(z.string()),
+  offerAdvocate: z.boolean(),
+});
+
+// What the browser receives.
+export interface AskSource {
+  id: string;
+  title: string;
+  source: string;
+  url: string;
+  checked: string;
+  passage: string;
+}
+
+export interface AskAnswer {
+  kind: AskKind;
+  text: string;
+  sources: AskSource[];
+  offerAdvocate: boolean;
+}
+
 // ---- Shared reply shape --------------------------------------------------
 
 export type AiErrorCode = "unavailable" | "busy" | "invalid" | "declined";

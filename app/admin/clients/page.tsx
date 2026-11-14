@@ -112,7 +112,17 @@ function Clients() {
                         No plan yet. Start Smart Intake
                       </Link>
                     ) : (
-                      (current?.title ?? "Plan complete")
+                      <>
+                        {current?.title ?? "Plan complete"}
+                        {c.planStatus === "starter" && (
+                          <Link
+                            href={`/admin/intake?client=${c.id}`}
+                            className="block text-sm font-semibold text-ember-700 hover:underline"
+                          >
+                            Starter plan. Make it personal
+                          </Link>
+                        )}
+                      </>
                     )}
                   </td>
                   <td className="px-4 py-3">

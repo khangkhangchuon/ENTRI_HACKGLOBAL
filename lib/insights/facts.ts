@@ -24,7 +24,8 @@ export function caseloadFacts(data: CaseloadData, now = Date.now()): ClientFacts
       id: c.id,
       name: `${c.firstName} ${c.lastName}`,
       borough: c.borough,
-      hasPlan: c.planStatus === "approved",
+      hasPlan: c.planStatus !== "none",
+      starterPlanOnly: c.planStatus === "starter",
       daysSinceIntake: days(c.createdAt, now),
       daysSinceCheckIn: days(c.lastCheckIn, now),
       stepsDone: c.plan.filter((s) => s.status === "done").length,
@@ -59,6 +60,9 @@ export function factLines(f: ClientFacts): string[] {
   if (!f.hasPlan) {
     lines.push("No plan has been approved yet.");
   } else {
+    if (f.starterPlanOnly) {
+      lines.push("On a starter plan begun online. No personal plan has been approved yet.");
+    }
     lines.push(`${f.stepsDone} of ${f.stepsTotal} steps are done.`);
     if (f.currentStep) lines.push(`The current step is "${f.currentStep}".`);
   }

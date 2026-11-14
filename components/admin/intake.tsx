@@ -141,11 +141,12 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
           <CheckCircle2 className="mt-0.5 h-7 w-7 shrink-0 text-moss-600" aria-hidden />
           <div>
             <h2 className="font-display text-2xl">
-              Approved. {phase.firstName} can now see the first step.
+              Approved. {phase.firstName} can see the personal plan now.
             </h2>
             <p className="mt-1 text-ink-soft">
-              The plan has {phase.steps} steps. {phase.firstName} sees one at a time. Your notes
-              and the points to keep in mind stay on your side.
+              The plan has {phase.steps} steps. {phase.firstName} sees one at a time, and steps
+              already finished stay finished. Your notes and the points to keep in mind stay on
+              your side.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {phase.clientId === mainClientId && (
@@ -199,7 +200,7 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
         <div className="sticky bottom-0 -mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-sand-200 bg-paper/95 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
           <p className="text-sm text-ink-soft">
             {canApprove
-              ? `${steps.length} steps. ${firstName} will see step 1 first.`
+              ? `${steps.length} steps. ${firstName} sees them one at a time.`
               : "Add a name and at least one step before you approve."}
           </p>
           <div className="flex gap-2">
@@ -313,7 +314,7 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
 function Intake() {
   const params = useSearchParams();
   const clients = useDemo((s) => s.clients);
-  const waiting = clients.filter((c) => c.planStatus === "none");
+  const waiting = clients.filter((c) => c.planStatus !== "approved");
 
   const asked = params.get("client");
   const [picked, setPicked] = useState<string>(
@@ -326,7 +327,10 @@ function Intake() {
     ...waiting.map((c) => ({
       id: c.id,
       title: fullName(c),
-      sub: "Waiting for a plan. Notes are ready.",
+      sub:
+        c.planStatus === "starter"
+          ? "On a starter plan. Notes are ready."
+          : "Waiting for a plan. Notes are ready.",
     })),
     { id: "new", title: "New client", sub: "Start from your own notes." },
   ];

@@ -80,3 +80,22 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* The small celebration when a step is marked done. */
+@keyframes entri-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes entri-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

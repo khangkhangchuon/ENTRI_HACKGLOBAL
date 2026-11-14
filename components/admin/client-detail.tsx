@@ -192,6 +192,22 @@ function Detail({ id }: { id: string }) {
                 </Link>
               </div>
             ) : (
+              <>
+              {client.planStatus === "starter" && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sand-100 p-3.5">
+                  <p className="max-w-md text-[15px]">
+                    This is the starter plan {client.firstName} began online, built from the
+                    standard steps. Smart Intake can make it personal.
+                  </p>
+                  <Link
+                    href={`/admin/intake?client=${client.id}`}
+                    className={buttonClass("primary", "sm")}
+                  >
+                    <Sparkles className="h-4 w-4" aria-hidden />
+                    Start Smart Intake
+                  </Link>
+                </div>
+              )}
               <ol className="mt-4 space-y-3">
                 {client.plan.map((s) => (
                   <li key={s.id} className="flex gap-3 rounded-lg border border-sand-200 p-3.5">
@@ -229,6 +245,7 @@ function Detail({ id }: { id: string }) {
                   </li>
                 ))}
               </ol>
+              </>
             )}
           </Card>
 

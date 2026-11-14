@@ -111,6 +111,23 @@ const STEP_TEMPLATES: StepTemplate[] = [
   },
 ];
 
+// The standard plan a person gets when they join Entri on their own. It is
+// built by plain code from the standard steps, with no AI, and it skips
+// anything the person says they already have.
+export function buildStarterPlan(clientId: string, have: Need[] = []): PlanStep[] {
+  return STEP_TEMPLATES.filter((t) => !have.includes(t.need)).map((t, i) => ({
+    id: `${clientId}-${t.key}`,
+    title: t.title,
+    what: t.what,
+    where: t.where,
+    bring: t.bring,
+    resourceIds: t.resourceIds,
+    status: i === 0 ? ("current" as const) : ("locked" as const),
+  }));
+}
+
+export const STARTER_NEEDS: Need[] = STEP_TEMPLATES.map((t) => t.need);
+
 // A draft written ahead of time for Marcus. Smart Intake shows it only when
 // the AI cannot be reached, so the demo can still continue.
 export const MARCUS_SAVED_DRAFT = {
@@ -200,8 +217,8 @@ export function buildSeed(now: Date): DemoData {
 
   // ---- Anchor clients -------------------------------------------------
 
-  // Marcus starts where the story starts: he met Diane this morning and has
-  // no plan yet. The visitor drafts and approves it with Smart Intake.
+  // Marcus found Entri online and began a starter plan on his own. He met
+  // Diane this morning. She can make the plan personal with Smart Intake.
   const marcus: Client = {
     id: MAIN_CLIENT_ID,
     firstName: "Marcus",
@@ -217,8 +234,8 @@ export function buildSeed(now: Date): DemoData {
     documents: [],
     keepInMind: [],
     lastCheckIn: at(0, 10),
-    planStatus: "none",
-    plan: [],
+    planStatus: "starter",
+    plan: buildStarterPlan(MAIN_CLIENT_ID),
     intakeNotes: MARCUS_INTAKE_NOTES,
     caseNotes: [],
     sharing: { [HOME_ORG_ID]: HOME_SHARING },
@@ -453,7 +470,7 @@ export function buildSeed(now: Date): DemoData {
       at: at(0, 10),
       kind: "intake",
       clientId: MAIN_CLIENT_ID,
-      text: "Marcus joined your caseload. His intake notes are ready for Smart Intake.",
+      text: "Marcus joined Entri online and began a starter plan. His intake notes are ready for Smart Intake.",
     },
     {
       id: "act-tanya-referral",
@@ -528,5 +545,7 @@ export function buildSeed(now: Date): DemoData {
     referrals,
     savedResourceIds: [],
     handledFlagIds: [],
+    signedIn: false,
+    seenGuide: false,
   };
 }

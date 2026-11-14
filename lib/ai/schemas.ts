@@ -92,6 +92,8 @@ export const ClientFacts = z.object({
   name: short,
   borough: z.enum(BOROUGH_VALUES),
   hasPlan: z.boolean(),
+  // True when the client is on the standard plan they began on their own.
+  starterPlanOnly: z.boolean(),
   daysSinceIntake: z.number().int().min(0).max(5000),
   daysSinceCheckIn: z.number().int().min(0).max(5000),
   stepsDone: z.number().int().min(0).max(50),

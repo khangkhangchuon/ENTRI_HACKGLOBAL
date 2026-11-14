@@ -9,7 +9,7 @@ ${VOICE_RULES}
 How to choose:
 - A client who has been quiet for a long time while a step is overdue matters most.
 - Then long silences (10 days or more), overdue steps, and referrals that have waited a long time.
-- A new client with no plan yet is worth one flag, since the plan is the caseworker's next job. If several are new, flag at most two of them.
+- A new client with no plan yet, or one who is only on a starter plan they began online (starterPlanOnly), is worth one flag, since a personal plan through Smart Intake is the caseworker's next job. If several are new, flag at most two of them.
 - Do not flag a client who is simply on track.
 - Never flag the same client twice. Never return more than four flags.
 

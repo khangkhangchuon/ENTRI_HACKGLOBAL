@@ -78,7 +78,9 @@ export interface PlanStep {
 }
 
 export type ClientStatus = "on-track" | "needs-attention" | "new";
-export type PlanStatus = "none" | "approved";
+// "starter" is the standard plan a person gets when they join on their own.
+// "approved" is a personal plan a caseworker has reviewed.
+export type PlanStatus = "none" | "starter" | "approved";
 
 export interface CaseNote {
   id: string;
@@ -175,6 +177,9 @@ export interface DemoData {
   referrals: Referral[];
   savedResourceIds: string[];
   handledFlagIds: string[];
+  // The returning citizen demo starts at a sign-in page.
+  signedIn: boolean;
+  seenGuide: boolean;
 }
 
 export const CATEGORY_LABELS: Record<Category, string> = {

@@ -165,7 +165,7 @@ export function CaseloadDigest() {
 function PlainFacts() {
   const data = useDemo();
   const rows = caseloadFacts(data)
-    .filter((f) => f.daysSinceCheckIn >= 10 || f.currentStepOverdueDays !== null || !f.hasPlan)
+    .filter((f) => f.daysSinceCheckIn >= 10 || f.currentStepOverdueDays !== null || !f.hasPlan || f.starterPlanOnly)
     .slice(0, 5);
   return (
     <ul className="space-y-2">

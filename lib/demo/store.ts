@@ -2,12 +2,13 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { buildSeed, MAIN_CLIENT_ID, SEED_EPOCH } from "./seed";
+import { buildSeed, buildStarterPlan, MAIN_CLIENT_ID, SEED_EPOCH, STARTER_NEEDS } from "./seed";
 import type {
   Activity,
   ActivityKind,
   Borough,
   Client,
+  Need,
   DemoData,
   PlanStep,
   ReferralStatus,
@@ -19,7 +20,7 @@ import type {
 // storage, so a Diane tab and a Marcus tab read and write the same data.
 // Every action that crosses sides also writes to the activity feed.
 
-export const STORAGE_KEY = "entri-demo-v2";
+export const STORAGE_KEY = "entri-demo-v3";
 
 interface DemoActions {
   resetDemo: () => void;
@@ -57,6 +58,10 @@ interface DemoActions {
   setReferralStatus: (referralId: string, status: ReferralStatus) => void;
   setSharing: (clientId: string, orgId: string, sharing: Sharing) => void;
   markFlagHandled: (flagId: string) => void;
+  signIn: () => void;
+  signOut: () => void;
+  markGuideSeen: () => void;
+  startOwnPlan: (input: { firstName: string; borough: Borough; have: Need[] }) => void;
 }
 
 export type DemoState = DemoData & DemoActions;
@@ -139,9 +144,25 @@ export const useDemo = create<DemoState>()(
       approvePlan: (clientId, draft) => {
         const client = get().clients.find((c) => c.id === clientId);
         if (!client) return;
-        const plan = draft.plan.map(
-          (s, i): PlanStep => ({ ...s, status: i === 0 ? "current" : "locked" }),
+        // Steps the client already finished stay finished when the plan is
+        // replaced. The first step that is not done becomes the current one.
+        const finished = new Map(
+          client.plan
+            .filter((s) => s.status === "done")
+            .map((s) => [s.title.trim().toLowerCase(), s.completedAt]),
         );
+        let currentSet = false;
+        const plan = draft.plan.map((s): PlanStep => {
+          const key = s.title.trim().toLowerCase();
+          if (finished.has(key)) {
+            return { ...s, status: "done", completedAt: finished.get(key) };
+          }
+          if (!currentSet) {
+            currentSet = true;
+            return { ...s, status: "current" };
+          }
+          return { ...s, status: "locked" };
+        });
         set((state) => ({
           clients: mapClient(state, clientId, (c) => ({
             ...c,
@@ -153,7 +174,7 @@ export const useDemo = create<DemoState>()(
           activity: [
             entry(
               "plan-approved",
-              `You approved ${client.firstName}'s plan. ${client.firstName} can now see the first step.`,
+              `You approved ${client.firstName}'s personal plan. ${client.firstName} can see it now.`,
               clientId,
             ),
             ...state.activity,
@@ -380,6 +401,34 @@ export const useDemo = create<DemoState>()(
             sharing: { ...c.sharing, [orgId]: sharing },
           })),
         })),
+
+      signIn: () => set({ signedIn: true }),
+      signOut: () => set({ signedIn: false }),
+      markGuideSeen: () => set({ seenGuide: true }),
+
+      // A person who creates their own account gets the standard steps,
+      // minus what they already have. No caseworker is needed for this.
+      startOwnPlan: ({ firstName, borough, have }) => {
+        const id = get().mainClientId;
+        const name = firstName.trim() || "Friend";
+        set((state) => ({
+          signedIn: true,
+          seenGuide: false,
+          clients: mapClient(state, id, (c) => ({
+            ...c,
+            firstName: name,
+            borough,
+            planStatus: "starter",
+            plan: buildStarterPlan(id, have),
+            needs: STARTER_NEEDS.filter((n) => !have.includes(n)),
+            lastCheckIn: nowIso(),
+          })),
+          activity: [
+            entry("intake", `${name} created an account online and began a starter plan.`, id),
+            ...state.activity,
+          ],
+        }));
+      },
 
       markFlagHandled: (flagId) =>
         set((state) => ({

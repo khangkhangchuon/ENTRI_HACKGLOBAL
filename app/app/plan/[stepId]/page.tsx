@@ -78,7 +78,7 @@ export default function StepPage() {
       {places.length > 0 && (
         <>
           <h2 className="mt-7 font-display text-2xl">Places that help with this</h2>
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 grid gap-3 @2xl:grid-cols-2">
             {places.map((r) => (
               <UserResourceCard key={r.id} resource={r} />
             ))}

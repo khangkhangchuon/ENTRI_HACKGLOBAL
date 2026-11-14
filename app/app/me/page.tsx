@@ -114,14 +114,14 @@ export default function MePage() {
           Nothing saved yet. Tap Save on any place in Find help.
         </p>
       ) : (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 grid gap-3 @2xl:grid-cols-2">
           {saved.map((r) => (
             <UserResourceCard key={r.id} resource={r} />
           ))}
         </div>
       )}
 
-      <div className="mt-8 space-y-2.5">
+      <div className="mt-8 space-y-2.5 @2xl:flex @2xl:gap-3 @2xl:space-y-0">
         <Link href="/app/guide" className={bigSecondary}>
           See the guide again
         </Link>

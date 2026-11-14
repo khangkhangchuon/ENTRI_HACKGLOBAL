@@ -65,7 +65,7 @@ export default function FindPage() {
       </div>
 
       {!searching ? (
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 @2xl:grid-cols-3">
           {TILES.map(({ id, icon: Icon }) => (
             <button
               key={id}
@@ -99,7 +99,7 @@ export default function FindPage() {
               {results.length} {results.length === 1 ? "place" : "places"}
             </p>
           </div>
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 grid gap-3 @2xl:grid-cols-2">
             {results.map((r) => (
               <UserResourceCard key={r.id} resource={r} />
             ))}

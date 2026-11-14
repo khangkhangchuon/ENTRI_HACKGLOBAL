@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, PageHeader, SectionTitle } from "@/components/ui/card";
 import { SelectField, TextField } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import { BOROUGHS, CATEGORY_LABELS, type Category } from "@/lib/demo/types";
 import { timeAgo } from "@/lib/format";
 
@@ -19,7 +19,7 @@ function Network() {
   const resources = useDemo((s) => s.resources);
   const organizations = useDemo((s) => s.organizations);
   const referrals = useDemo((s) => s.referrals);
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
   const homeOrgId = useDemo((s) => s.homeOrgId);
   const setReferralStatus = useDemo((s) => s.setReferralStatus);
 

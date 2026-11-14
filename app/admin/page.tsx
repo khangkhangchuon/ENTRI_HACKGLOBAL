@@ -6,12 +6,12 @@ import { CaseloadDigest } from "@/components/admin/caseload-digest";
 import { WhenReady } from "@/components/admin/shared";
 import { buttonClass } from "@/components/ui/button";
 import { Card, SectionTitle } from "@/components/ui/card";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import { daysSince, greeting, longDate, timeAgo } from "@/lib/format";
 
 function Dashboard() {
   const caseworker = useDemo((s) => s.caseworker);
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
   const referrals = useDemo((s) => s.referrals);
   const activity = useDemo((s) => s.activity);
 

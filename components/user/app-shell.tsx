@@ -24,7 +24,8 @@ import {
   useWideScreen,
   type ViewMode,
 } from "@/components/user/view-mode";
-import { useDemo } from "@/lib/demo/store";
+import { selectMainClient, useDemo } from "@/lib/demo/store";
+import { onCaseload } from "@/lib/demo/types";
 
 const TABS = [
   { href: "/app", label: "Home", icon: Home },
@@ -72,6 +73,7 @@ function ViewSwitch({ mode }: { mode: ViewMode }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const ready = useDemoReady();
   const signedIn = useDemo((s) => s.signedIn);
+  const connected = useDemo((s) => onCaseload(selectMainClient(s)));
   const pathname = usePathname();
   const router = useRouter();
   const wide = useWideScreen();
@@ -93,13 +95,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const tools = (
     <div className="flex items-center gap-2">
       <ReadAloud />
-      <Link
-        href="/app/messages"
-        aria-label="Messages with Diane"
-        className="rounded-full border border-sand-300 bg-white p-2 text-ink hover:bg-sand-100"
-      >
-        <MessagesSquare className="h-5 w-5" aria-hidden />
-      </Link>
+      {connected && (
+        <Link
+          href="/app/messages"
+          aria-label="Messages with your caseworker"
+          className="rounded-full border border-sand-300 bg-white p-2 text-ink hover:bg-sand-100"
+        >
+          <MessagesSquare className="h-5 w-5" aria-hidden />
+        </Link>
+      )}
     </div>
   );
 

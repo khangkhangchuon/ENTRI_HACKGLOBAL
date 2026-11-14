@@ -1,8 +1,16 @@
 "use client";
 
+import { useMemo } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { buildSeed, buildStarterPlan, MAIN_CLIENT_ID, SEED_EPOCH, STARTER_NEEDS } from "./seed";
+import {
+  buildSeed,
+  buildStarterPlan,
+  MAIN_CLIENT_ID,
+  SEED_EPOCH,
+  STARTER_NEEDS,
+} from "./seed";
+import { NEED_LABELS, onCaseload } from "./types";
 import type {
   Activity,
   ActivityKind,
@@ -20,7 +28,7 @@ import type {
 // storage, so a Diane tab and a Marcus tab read and write the same data.
 // Every action that crosses sides also writes to the activity feed.
 
-export const STORAGE_KEY = "entri-demo-v3";
+export const STORAGE_KEY = "entri-demo-v4";
 
 interface DemoActions {
   resetDemo: () => void;
@@ -30,18 +38,38 @@ interface DemoActions {
     draft: {
       plan: Omit<PlanStep, "status" | "completedAt">[];
       profile?: Partial<
-        Pick<Client, "summary" | "goal" | "needs" | "skills" | "keepInMind" | "documents" | "borough">
+        Pick<
+          Client,
+          | "summary"
+          | "goal"
+          | "needs"
+          | "skills"
+          | "keepInMind"
+          | "documents"
+          | "borough"
+        >
       >;
     },
   ) => void;
-  editStep: (clientId: string, stepId: string, changes: Partial<PlanStep>) => void;
+  editStep: (
+    clientId: string,
+    stepId: string,
+    changes: Partial<PlanStep>,
+  ) => void;
   rewindToIntake: (clientId: string) => void;
-  sendMessage: (clientId: string, from: "client" | "caseworker", text: string) => void;
+  sendMessage: (
+    clientId: string,
+    from: "client" | "caseworker",
+    text: string,
+  ) => void;
   addCaseNote: (clientId: string, text: string) => void;
   toggleSaved: (resourceId: string) => void;
   tellCaseworker: (clientId: string, resourceId: string) => void;
   addResource: (resource: Omit<Resource, "id">) => void;
-  updateResource: (resourceId: string, changes: Partial<Omit<Resource, "id">>) => void;
+  updateResource: (
+    resourceId: string,
+    changes: Partial<Omit<Resource, "id">>,
+  ) => void;
   createClient: (input: {
     firstName: string;
     lastName: string;
@@ -61,7 +89,12 @@ interface DemoActions {
   signIn: () => void;
   signOut: () => void;
   markGuideSeen: () => void;
-  startOwnPlan: (input: { firstName: string; borough: Borough; have: Need[] }) => void;
+  startOwnPlan: (input: {
+    firstName: string;
+    borough: Borough;
+    have: Need[];
+  }) => void;
+  connectCaseworker: (input: { sharing: Sharing; note: string }) => void;
 }
 
 export type DemoState = DemoData & DemoActions;
@@ -123,7 +156,8 @@ export const useDemo = create<DemoState>()(
         if (!client || !step || step.status !== "current") return;
         const index = client.plan.indexOf(step);
         const plan = client.plan.map((s, i): PlanStep => {
-          if (i === index) return { ...s, status: "done", completedAt: nowIso() };
+          if (i === index)
+            return { ...s, status: "done", completedAt: nowIso() };
           if (i === index + 1) return { ...s, status: "current" };
           return s;
         });
@@ -134,10 +168,20 @@ export const useDemo = create<DemoState>()(
             lastCheckIn: nowIso(),
             status: c.status === "new" ? "on-track" : c.status,
           })),
-          activity: [
-            entry("step-done", `${client.firstName} completed "${step.title}"`, clientId),
-            ...state.activity,
-          ],
+          // The caseworker hears about it only if the person has one and
+          // has agreed to share progress.
+          activity:
+            onCaseload(client) &&
+            (client.sharing[state.homeOrgId]?.progress ?? false)
+              ? [
+                  entry(
+                    "step-done",
+                    `${client.firstName} completed "${step.title}"`,
+                    clientId,
+                  ),
+                  ...state.activity,
+                ]
+              : state.activity,
         }));
       },
 
@@ -189,10 +233,16 @@ export const useDemo = create<DemoState>()(
         set((state) => ({
           clients: mapClient(state, clientId, (c) => ({
             ...c,
-            plan: c.plan.map((s) => (s.id === stepId ? { ...s, ...changes } : s)),
+            plan: c.plan.map((s) =>
+              s.id === stepId ? { ...s, ...changes } : s,
+            ),
           })),
           activity: [
-            entry("plan-edited", `You updated "${step.title}" in ${client.firstName}'s plan.`, clientId),
+            entry(
+              "plan-edited",
+              `You updated "${step.title}" in ${client.firstName}'s plan.`,
+              clientId,
+            ),
             ...state.activity,
           ],
         }));
@@ -217,7 +267,7 @@ export const useDemo = create<DemoState>()(
       sendMessage: (clientId, from, text) => {
         const client = get().clients.find((c) => c.id === clientId);
         const trimmed = text.trim();
-        if (!client || !trimmed) return;
+        if (!client || !trimmed || !onCaseload(client)) return;
         set((state) => ({
           messages: [
             ...state.messages,
@@ -225,11 +275,21 @@ export const useDemo = create<DemoState>()(
           ],
           clients:
             from === "client"
-              ? mapClient(state, clientId, (c) => ({ ...c, lastCheckIn: nowIso() }))
+              ? mapClient(state, clientId, (c) => ({
+                  ...c,
+                  lastCheckIn: nowIso(),
+                }))
               : state.clients,
           activity:
             from === "client"
-              ? [entry("message", `${client.firstName} sent you a message.`, clientId), ...state.activity]
+              ? [
+                  entry(
+                    "message",
+                    `${client.firstName} sent you a message.`,
+                    clientId,
+                  ),
+                  ...state.activity,
+                ]
               : state.activity,
         }));
       },
@@ -240,7 +300,10 @@ export const useDemo = create<DemoState>()(
         set((state) => ({
           clients: mapClient(state, clientId, (c) => ({
             ...c,
-            caseNotes: [{ id: uid("note"), at: nowIso(), text: trimmed }, ...c.caseNotes],
+            caseNotes: [
+              { id: uid("note"), at: nowIso(), text: trimmed },
+              ...c.caseNotes,
+            ],
           })),
         }));
       },
@@ -255,7 +318,7 @@ export const useDemo = create<DemoState>()(
       tellCaseworker: (clientId, resourceId) => {
         const client = get().clients.find((c) => c.id === clientId);
         const resource = get().resources.find((r) => r.id === resourceId);
-        if (!client || !resource) return;
+        if (!client || !resource || !onCaseload(client)) return;
         const org = get().organizations.find((o) => o.id === resource.orgId);
         set((state) => ({
           activity: [
@@ -340,7 +403,11 @@ export const useDemo = create<DemoState>()(
         set((state) => ({
           clients: mapClient(state, clientId, (c) => ({ ...c, plan })),
           activity: [
-            entry("plan-edited", `You removed "${step.title}" from ${client.firstName}'s plan.`, clientId),
+            entry(
+              "plan-edited",
+              `You removed "${step.title}" from ${client.firstName}'s plan.`,
+              clientId,
+            ),
             ...state.activity,
           ],
         }));
@@ -411,20 +478,80 @@ export const useDemo = create<DemoState>()(
       startOwnPlan: ({ firstName, borough, have }) => {
         const id = get().mainClientId;
         const name = firstName.trim() || "Friend";
+        const now = nowIso();
+        const has = have.length
+          ? `Says they already have: ${have.map((n) => NEED_LABELS[n]).join(", ")}.`
+          : "Says they are starting without ID, phone, bank account, benefits, housing or work.";
         set((state) => ({
           signedIn: true,
           seenGuide: false,
+          // A new account is a new person: no caseworker, nothing shared.
           clients: mapClient(state, id, (c) => ({
             ...c,
             firstName: name,
+            lastName: "",
             borough,
+            createdAt: now,
+            status: "new",
+            summary: "",
+            goal: "",
+            skills: [],
+            documents: [],
+            keepInMind: [],
+            caseNotes: [],
             planStatus: "starter",
             plan: buildStarterPlan(id, have),
             needs: STARTER_NEEDS.filter((n) => !have.includes(n)),
-            lastCheckIn: nowIso(),
+            intakeNotes: `${name} created an Entri account online. Staying in ${borough}. ${has}`,
+            lastCheckIn: now,
+            sharing: {},
+            connected: false,
           })),
+          messages: state.messages.filter((m) => m.clientId !== id),
+          referrals: state.referrals.filter((r) => r.clientId !== id),
+          activity: state.activity.filter((a) => a.clientId !== id),
+          savedResourceIds: [],
+        }));
+      },
+
+      // The person asks for a caseworker and chooses what to share. Only
+      // now do they appear on the organization's caseload.
+      connectCaseworker: ({ sharing, note }) => {
+        const id = get().mainClientId;
+        const client = get().clients.find((c) => c.id === id);
+        if (!client || onCaseload(client)) return;
+        const now = nowIso();
+        const chosen = (["profile", "plan", "progress"] as const).filter(
+          (k) => sharing[k],
+        );
+        const trimmed = note.trim();
+        set((state) => ({
+          clients: mapClient(state, id, (c) => ({
+            ...c,
+            connected: true,
+            createdAt: now,
+            lastCheckIn: now,
+            status: "new",
+            sharing: { ...c.sharing, [state.homeOrgId]: sharing },
+          })),
+          messages: trimmed
+            ? [
+                ...state.messages,
+                {
+                  id: uid("msg"),
+                  clientId: id,
+                  from: "client",
+                  at: now,
+                  text: trimmed,
+                },
+              ]
+            : state.messages,
           activity: [
-            entry("intake", `${name} created an account online and began a starter plan.`, id),
+            entry(
+              "connect",
+              `${client.firstName} asked for a caseworker through Entri. Shared with you: ${chosen.length ? chosen.join(", ") : "name only"}.`,
+              id,
+            ),
             ...state.activity,
           ],
         }));
@@ -446,6 +573,13 @@ export const useDemo = create<DemoState>()(
     },
   ),
 );
+
+// The people the caseworker works with. Someone using Entri on their own
+// is left out until they ask for a caseworker.
+export function useCaseload(): Client[] {
+  const clients = useDemo((s) => s.clients);
+  return useMemo(() => clients.filter(onCaseload), [clients]);
+}
 
 export const selectMainClient = (state: DemoState) =>
   state.clients.find((c) => c.id === MAIN_CLIENT_ID)!;

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextArea } from "@/components/ui/field";
 import { toast } from "@/components/ui/toast";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import type { Sharing } from "@/lib/demo/types";
 
 const SHARE_OPTIONS: { key: keyof Sharing; label: string; help: string }[] = [
@@ -38,8 +38,14 @@ export function ReferralDialog({
   );
 }
 
-function ReferralForm({ target, onClose }: { target: ReferralTarget; onClose: () => void }) {
-  const allClients = useDemo((s) => s.clients);
+function ReferralForm({
+  target,
+  onClose,
+}: {
+  target: ReferralTarget;
+  onClose: () => void;
+}) {
+  const allClients = useCaseload();
   const resources = useDemo((s) => s.resources);
   const organizations = useDemo((s) => s.organizations);
   const homeOrgId = useDemo((s) => s.homeOrgId);
@@ -132,7 +138,9 @@ function ReferralForm({ target, onClose }: { target: ReferralTarget; onClose: ()
                   checked={allowed && picked.includes(o.key)}
                   onChange={(e) =>
                     setPicked(
-                      e.target.checked ? [...picked, o.key] : picked.filter((k) => k !== o.key),
+                      e.target.checked
+                        ? [...picked, o.key]
+                        : picked.filter((k) => k !== o.key),
                     )
                   }
                 />

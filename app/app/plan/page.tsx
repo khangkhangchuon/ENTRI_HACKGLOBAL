@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Check, ChevronRight, Lock } from "lucide-react";
 import { Screen } from "@/components/user/app-shell";
 import { selectMainClient, useDemo } from "@/lib/demo/store";
+import { onCaseload } from "@/lib/demo/types";
 
 export default function PlanPage() {
   const me = useDemo(selectMainClient);
@@ -22,7 +23,9 @@ export default function PlanPage() {
       <p className="rounded-2xl bg-sand-100 p-3.5 text-[17px]">
         {me.planStatus === "approved"
           ? `${caseworker.firstName} reviewed this plan and made it personal for you.`
-          : `This is your starter plan. It works on its own. If you meet with ${caseworker.firstName}, she can make it more personal.`}
+          : onCaseload(me)
+            ? `This is your starter plan. ${caseworker.firstName} can make it more personal when you meet.`
+            : "This is your starter plan. It works on its own, with no caseworker needed."}
       </p>
 
       <ol className="mt-5">
@@ -67,7 +70,9 @@ export default function PlanPage() {
                   <Link
                     href={`/app/plan/${s.id}`}
                     className={`flex items-center gap-2 rounded-2xl border bg-white p-3.5 ${
-                      s.status === "current" ? "border-2 border-ember-400" : "border-sand-200"
+                      s.status === "current"
+                        ? "border-2 border-ember-400"
+                        : "border-sand-200"
                     }`}
                   >
                     <span className="flex-1">
@@ -76,7 +81,10 @@ export default function PlanPage() {
                         {s.status === "done" ? "Done" : "This is your step now"}
                       </span>
                     </span>
-                    <ChevronRight className="h-5 w-5 text-ink-soft" aria-hidden />
+                    <ChevronRight
+                      className="h-5 w-5 text-ink-soft"
+                      aria-hidden
+                    />
                   </Link>
                 )}
               </div>

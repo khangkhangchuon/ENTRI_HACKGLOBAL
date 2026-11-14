@@ -74,20 +74,35 @@ export default function LoginPage() {
       {view === "welcome" && (
         <>
           <EntriLogo size="lg" />
-          <h1 className="mt-8 font-display text-4xl leading-tight">A place to begin.</h1>
+          <h1 className="mt-8 font-display text-4xl leading-tight">
+            A place to begin.
+          </h1>
           <p className="mt-3 text-ink-soft">
-            Entri shows you what to do next after coming home, one step at a time.
+            Entri shows you what to do next after coming home, one step at a
+            time.
           </p>
           <p className="mt-5 flex items-start gap-2.5 rounded-2xl bg-sand-100 p-4 text-[17px]">
-            <Globe className="mt-0.5 h-5 w-5 shrink-0 text-ember-600" aria-hidden />
-            Entri is free and opens in any web browser, on a phone or a library computer. You
-            can start on your own. You do not need a caseworker to begin.
+            <Globe
+              className="mt-0.5 h-5 w-5 shrink-0 text-ember-600"
+              aria-hidden
+            />
+            Entri is free and opens in any web browser, on a phone or a library
+            computer. You can start on your own. You do not need a caseworker to
+            begin.
           </p>
           <div className="mt-auto space-y-3 pt-8">
-            <button type="button" className={bigPrimary} onClick={() => setView("sign-in")}>
+            <button
+              type="button"
+              className={bigPrimary}
+              onClick={() => setView("sign-in")}
+            >
               Sign in
             </button>
-            <button type="button" className={bigSecondary} onClick={() => setView("name")}>
+            <button
+              type="button"
+              className={bigSecondary}
+              onClick={() => setView("name")}
+            >
               Create an account
             </button>
           </div>
@@ -144,8 +159,12 @@ export default function LoginPage() {
           }}
         >
           <Back onClick={() => setView("welcome")} />
-          <p className="text-[15px] font-semibold text-ember-700">Step 1 of 3</p>
-          <h1 className="mt-1 font-display text-3xl">What should we call you?</h1>
+          <p className="text-[15px] font-semibold text-ember-700">
+            Step 1 of 3
+          </p>
+          <h1 className="mt-1 font-display text-3xl">
+            What should we call you?
+          </h1>
           <p className="mt-1.5 text-ink-soft">A first name is enough.</p>
           <label className="mt-6 block font-semibold" htmlFor="new-name">
             First name
@@ -158,7 +177,11 @@ export default function LoginPage() {
             className={clsx(inputClass, "mt-1 py-3 text-lg")}
           />
           <div className="mt-auto pt-8">
-            <button type="submit" className={bigPrimary} disabled={!firstName.trim()}>
+            <button
+              type="submit"
+              className={bigPrimary}
+              disabled={!firstName.trim()}
+            >
               Next
             </button>
           </div>
@@ -168,10 +191,20 @@ export default function LoginPage() {
       {view === "borough" && (
         <div className="flex flex-1 flex-col">
           <Back onClick={() => setView("name")} />
-          <p className="text-[15px] font-semibold text-ember-700">Step 2 of 3</p>
-          <h1 className="mt-1 font-display text-3xl">Where are you staying now?</h1>
-          <p className="mt-1.5 text-ink-soft">This helps Entri show help near you.</p>
-          <div role="radiogroup" aria-label="Borough" className="mt-5 space-y-2.5">
+          <p className="text-[15px] font-semibold text-ember-700">
+            Step 2 of 3
+          </p>
+          <h1 className="mt-1 font-display text-3xl">
+            Where are you staying now?
+          </h1>
+          <p className="mt-1.5 text-ink-soft">
+            This helps Entri show help near you.
+          </p>
+          <div
+            role="radiogroup"
+            aria-label="Borough"
+            className="mt-5 space-y-2.5"
+          >
             {BOROUGHS.map((b) => (
               <button
                 key={b}
@@ -185,12 +218,18 @@ export default function LoginPage() {
                 )}
               >
                 {b}
-                {borough === b && <Check className="h-5 w-5 text-ember-600" aria-hidden />}
+                {borough === b && (
+                  <Check className="h-5 w-5 text-ember-600" aria-hidden />
+                )}
               </button>
             ))}
           </div>
           <div className="mt-auto pt-8">
-            <button type="button" className={bigPrimary} onClick={() => setView("have")}>
+            <button
+              type="button"
+              className={bigPrimary}
+              onClick={() => setView("have")}
+            >
               Next
             </button>
           </div>
@@ -200,11 +239,15 @@ export default function LoginPage() {
       {view === "have" && (
         <div className="flex flex-1 flex-col">
           <Back onClick={() => setView("borough")} />
-          <p className="text-[15px] font-semibold text-ember-700">Step 3 of 3</p>
-          <h1 className="mt-1 font-display text-3xl">What do you already have?</h1>
+          <p className="text-[15px] font-semibold text-ember-700">
+            Step 3 of 3
+          </p>
+          <h1 className="mt-1 font-display text-3xl">
+            What do you already have?
+          </h1>
           <p className="mt-1.5 text-ink-soft">
-            Tap what you have. Entri builds your plan from the rest. Having none of these is a
-            fine place to start.
+            Tap what you have. Entri builds your plan from the rest. Having none
+            of these is a fine place to start.
           </p>
           <div className="mt-5 space-y-2.5">
             {HAVE.map((h) => {
@@ -216,7 +259,9 @@ export default function LoginPage() {
                   role="checkbox"
                   aria-checked={on}
                   onClick={() =>
-                    setHave(on ? have.filter((n) => n !== h.need) : [...have, h.need])
+                    setHave(
+                      on ? have.filter((n) => n !== h.need) : [...have, h.need],
+                    )
                   }
                   className={clsx(
                     "flex w-full items-center gap-3 rounded-2xl border-2 bg-white px-5 py-3.5 text-left font-semibold",
@@ -226,7 +271,9 @@ export default function LoginPage() {
                   <span
                     className={clsx(
                       "flex h-6 w-6 items-center justify-center rounded-md border-2",
-                      on ? "border-moss-600 bg-moss-600 text-white" : "border-sand-300",
+                      on
+                        ? "border-moss-600 bg-moss-600 text-white"
+                        : "border-sand-300",
                     )}
                   >
                     {on && <Check className="h-4 w-4" aria-hidden />}

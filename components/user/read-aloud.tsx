@@ -27,7 +27,8 @@ export function ReadAloud() {
       setSpeaking(false);
       return;
     }
-    const text = document.querySelector<HTMLElement>("[data-read]")?.innerText ?? "";
+    const text =
+      document.querySelector<HTMLElement>("[data-read]")?.innerText ?? "";
     if (!text.trim()) return;
     const voice = new SpeechSynthesisUtterance(text);
     voice.rate = 0.95;

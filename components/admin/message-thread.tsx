@@ -33,7 +33,10 @@ export function MessageThread({
           {thread.map((m) => {
             const mine = m.from === side;
             return (
-              <li key={m.id} className={clsx("flex", mine ? "justify-end" : "justify-start")}>
+              <li
+                key={m.id}
+                className={clsx("flex", mine ? "justify-end" : "justify-start")}
+              >
                 <div
                   className={clsx(
                     "max-w-[85%] rounded-2xl px-3.5 py-2.5",
@@ -42,7 +45,8 @@ export function MessageThread({
                 >
                   <p className="whitespace-pre-wrap">{m.text}</p>
                   <p className="mt-1 text-xs text-ink-soft">
-                    {mine ? "You" : otherName}, {shortDate(m.at)} at {clockTime(m.at)}
+                    {mine ? "You" : otherName}, {shortDate(m.at)} at{" "}
+                    {clockTime(m.at)}
                   </p>
                 </div>
               </li>

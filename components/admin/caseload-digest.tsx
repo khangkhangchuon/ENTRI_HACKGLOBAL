@@ -9,7 +9,7 @@ import { Button, buttonClass } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import type { CaseloadDigest as Digest } from "@/lib/ai/schemas";
 import { useAi } from "@/lib/ai/use-ai";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import { timeAgo } from "@/lib/format";
 import { caseloadFacts, factLines } from "@/lib/insights/facts";
 
@@ -19,7 +19,8 @@ const flagId = (clientId: string) => `caseload:${clientId}`;
 // to flag and writes the wording. Diane decides what to do.
 export function CaseloadDigest() {
   const seededAt = useDemo((s) => s.seededAt);
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
+  const homeOrgId = useDemo((s) => s.homeOrgId);
   const messages = useDemo((s) => s.messages);
   const referrals = useDemo((s) => s.referrals);
   const organizations = useDemo((s) => s.organizations);
@@ -39,12 +40,15 @@ export function CaseloadDigest() {
   // The facts shown under "Why was this flagged?" always come from the
   // live data.
   const facts = useMemo(
-    () => caseloadFacts({ clients, messages, referrals, organizations }),
-    [clients, messages, referrals, organizations],
+    () =>
+      caseloadFacts({ clients, messages, referrals, organizations, homeOrgId }),
+    [clients, messages, referrals, organizations, homeOrgId],
   );
 
   const flags = (data?.flags ?? []).filter(
-    (f) => !handled.includes(flagId(f.clientId)) && facts.some((x) => x.id === f.clientId),
+    (f) =>
+      !handled.includes(flagId(f.clientId)) &&
+      facts.some((x) => x.id === f.clientId),
   );
   const loading = status === "loading" || status === "idle";
 
@@ -71,7 +75,9 @@ export function CaseloadDigest() {
       </div>
       <p className="mt-1 text-sm text-ink-soft">
         Who may need you today, drafted from your caseload data.
-        {generatedAt && !loading && ` Updated ${timeAgo(generatedAt).toLowerCase()}.`}
+        {generatedAt &&
+          !loading &&
+          ` Updated ${timeAgo(generatedAt).toLowerCase()}.`}
       </p>
 
       <div aria-live="polite" className="mt-4">
@@ -79,7 +85,10 @@ export function CaseloadDigest() {
           <div className="space-y-3" aria-label="Reading your caseload">
             <p className="text-ink-soft">Reading your caseload…</p>
             {[0, 1].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-lg bg-sand-100" />
+              <div
+                key={i}
+                className="h-20 animate-pulse rounded-lg bg-sand-100"
+              />
             ))}
           </div>
         )}
@@ -105,11 +114,15 @@ export function CaseloadDigest() {
             flags.map((f) => {
               const fact = facts.find((x) => x.id === f.clientId)!;
               return (
-                <li key={f.clientId} className="rounded-lg border border-sand-200 bg-paper p-4">
+                <li
+                  key={f.clientId}
+                  className="rounded-lg border border-sand-200 bg-paper p-4"
+                >
                   <p className="font-semibold">{f.headline}</p>
                   <p className="mt-1 text-ink-soft">{f.detail}</p>
                   <p className="mt-1 text-ink-soft">
-                    <span className="font-semibold text-ink">Suggested:</span> {f.suggestedAction}
+                    <span className="font-semibold text-ink">Suggested:</span>{" "}
+                    {f.suggestedAction}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
@@ -147,8 +160,8 @@ export function CaseloadDigest() {
                       ))}
                     </ul>
                     <p className="mt-2 text-sm text-ink-soft">
-                      These facts come straight from the caseload data. The AI chose this client
-                      and wrote the wording above.
+                      These facts come straight from the caseload data. The AI
+                      chose this client and wrote the wording above.
                     </p>
                   </details>
                 </li>
@@ -165,16 +178,30 @@ export function CaseloadDigest() {
 function PlainFacts() {
   const data = useDemo();
   const rows = caseloadFacts(data)
-    .filter((f) => f.daysSinceCheckIn >= 10 || f.currentStepOverdueDays !== null || !f.hasPlan || f.starterPlanOnly)
+    .filter(
+      (f) =>
+        f.daysSinceCheckIn >= 10 ||
+        f.currentStepOverdueDays !== null ||
+        !f.hasPlan ||
+        f.starterPlanOnly,
+    )
     .slice(0, 5);
   return (
     <ul className="space-y-2">
       {rows.map((f) => (
-        <li key={f.id} className="rounded-lg border border-sand-200 bg-paper p-4">
-          <Link href={`/admin/clients/${f.id}`} className="font-semibold underline">
+        <li
+          key={f.id}
+          className="rounded-lg border border-sand-200 bg-paper p-4"
+        >
+          <Link
+            href={`/admin/clients/${f.id}`}
+            className="font-semibold underline"
+          >
             {f.name}
           </Link>
-          <p className="mt-1 text-ink-soft">{factLines(f).slice(0, 4).join(" ")}</p>
+          <p className="mt-1 text-ink-soft">
+            {factLines(f).slice(0, 4).join(" ")}
+          </p>
         </li>
       ))}
     </ul>

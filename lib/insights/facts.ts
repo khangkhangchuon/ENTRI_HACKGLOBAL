@@ -1,6 +1,6 @@
 import type { ClientFacts, GapFact, ResourceBrief } from "@/lib/ai/schemas";
 import type { DemoData, Need } from "@/lib/demo/types";
-import { NEED_LABELS } from "@/lib/demo/types";
+import { NEED_LABELS, onCaseload } from "@/lib/demo/types";
 
 // Plain-code facts. The numbers the AI talks about are worked out here, so
 // they are always true to the data. The AI only chooses and words them.
@@ -9,13 +9,21 @@ const DAY = 86_400_000;
 const days = (from: string, now: number) =>
   Math.max(0, Math.floor((now - new Date(from).getTime()) / DAY));
 
-type CaseloadData = Pick<DemoData, "clients" | "messages" | "referrals" | "organizations">;
+type CaseloadData = Pick<
+  DemoData,
+  "clients" | "messages" | "referrals" | "organizations" | "homeOrgId"
+>;
 
 export function caseloadFacts(data: CaseloadData, now = Date.now()): ClientFacts[] {
   const orgName = (id: string) =>
     data.organizations.find((o) => o.id === id)?.name ?? "another organization";
 
-  return data.clients.map((c) => {
+  // Only people on the caseload who share their progress. Facts about
+  // someone's steps are never worked out without their agreement.
+  const shared = data.clients.filter(
+    (c) => onCaseload(c) && (c.sharing[data.homeOrgId]?.progress ?? false),
+  );
+  return shared.map((c) => {
     const current = c.plan.find((s) => s.status === "current");
     const due = current?.dueAt ? new Date(current.dueAt).getTime() : null;
     const thread = data.messages.filter((m) => m.clientId === c.id);
@@ -124,7 +132,7 @@ export function gapFacts(
   for (const borough of boroughs) {
     for (const need of LOCAL_NEEDS) {
       const clients = data.clients.filter(
-        (c) => c.borough === borough && c.needs.includes(need),
+        (c) => onCaseload(c) && c.borough === borough && c.needs.includes(need),
       );
       if (clients.length === 0) continue;
       const offering = data.resources.filter((r) => r.services.includes(need));

@@ -115,7 +115,13 @@ export interface Client {
   caseNotes: CaseNote[];
   // Keyed by organization id. The client chooses what each one can see.
   sharing: Record<string, Sharing>;
+  // False for someone who uses Entri on their own and has not asked for a
+  // caseworker. They are not on any caseload until they choose to connect.
+  connected?: boolean;
 }
+
+// True when the person works with a caseworker at the home organization.
+export const onCaseload = (c: Client) => c.connected !== false;
 
 export type ActivityKind =
   | "step-done"
@@ -126,7 +132,8 @@ export type ActivityKind =
   | "resource"
   | "intake"
   | "check-in"
-  | "interest";
+  | "interest"
+  | "connect";
 
 export interface Activity {
   id: string;

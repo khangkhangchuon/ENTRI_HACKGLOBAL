@@ -24,7 +24,9 @@ export default function GuidePage() {
   return (
     <div className="flex min-h-full flex-col px-6 pb-8 pt-6 text-lg">
       <div className="flex items-center justify-between">
-        <p className="text-[15px] font-semibold text-ember-700">Your guide, {page + 1} of 3</p>
+        <p className="text-[15px] font-semibold text-ember-700">
+          Your guide, {page + 1} of 3
+        </p>
         <ReadAloud />
       </div>
 
@@ -35,8 +37,8 @@ export default function GuidePage() {
           </h1>
           <LoopDiagram className="mx-auto mt-2 w-full max-w-xs" />
           <p className="text-ink-soft">
-            A home needs a job. A job needs an ID. An ID needs an address. It is hard to know
-            where to begin.
+            A home needs a job. A job needs an ID. An ID needs an address. It is
+            hard to know where to begin.
           </p>
         </div>
       )}
@@ -47,7 +49,8 @@ export default function GuidePage() {
             Entri turns the loop into a path.
           </h1>
           <p className="mt-2 text-ink-soft">
-            Your plan is ready now. You do one step at a time, and each step opens the next.
+            Your plan is ready now. You do one step at a time, and each step
+            opens the next.
           </p>
           <ol className="mt-5">
             {steps.map((s, i) => (
@@ -58,26 +61,38 @@ export default function GuidePage() {
                   >
                     {i + 1}
                   </span>
-                  {i < steps.length - 1 && <span className="h-6 w-0.5 bg-sand-300" />}
+                  {i < steps.length - 1 && (
+                    <span className="h-6 w-0.5 bg-sand-300" />
+                  )}
                 </div>
-                <p className={`pt-1 ${i === 0 ? "font-semibold" : "text-ink-soft"}`}>
+                <p
+                  className={`pt-1 ${i === 0 ? "font-semibold" : "text-ink-soft"}`}
+                >
                   {s.title}
                 </p>
               </li>
             ))}
           </ol>
           {me.plan.length > steps.length && (
-            <p className="mt-2 text-ink-soft">And {me.plan.length - steps.length} more after that.</p>
+            <p className="mt-2 text-ink-soft">
+              And {me.plan.length - steps.length} more after that.
+            </p>
           )}
         </div>
       )}
 
       {page === 2 && (
         <div className="mt-4">
-          <h1 className="font-display text-3xl leading-tight">You are not doing this alone.</h1>
+          <h1 className="font-display text-3xl leading-tight">
+            Help is here when you want it.
+          </h1>
           <ul className="mt-5 space-y-4">
             {[
-              { icon: ListChecks, title: "My plan", text: "See every step and what comes next." },
+              {
+                icon: ListChecks,
+                title: "My plan",
+                text: "See every step and what comes next.",
+              },
               {
                 icon: Compass,
                 title: "Find help",
@@ -86,7 +101,7 @@ export default function GuidePage() {
               {
                 icon: MessageCircle,
                 title: "Ask Entri",
-                text: "Ask a question in your own words. Or message a real person.",
+                text: "Ask a question in your own words, any time.",
               },
             ].map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex gap-3.5">
@@ -100,6 +115,10 @@ export default function GuidePage() {
               </li>
             ))}
           </ul>
+          <p className="mt-5 rounded-2xl bg-sand-100 p-4 text-[17px]">
+            You can do all of this on your own. If you ever want a person to
+            help, you can ask for a caseworker in Find help.
+          </p>
         </div>
       )}
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { bigSecondary, Screen } from "@/components/user/app-shell";
 import { UserResourceCard } from "@/components/user/resource-card";
 import { selectMainClient, useDemo } from "@/lib/demo/store";
-import type { Sharing } from "@/lib/demo/types";
+import { onCaseload, type Sharing } from "@/lib/demo/types";
 
 const SHARE: { key: keyof Sharing; label: string }[] = [
   { key: "profile", label: "My profile" },
@@ -48,6 +48,7 @@ export default function MePage() {
   const setSharing = useDemo((s) => s.setSharing);
   const signOut = useDemo((s) => s.signOut);
 
+  const connected = onCaseload(me);
   const saved = resources.filter((r) => savedIds.includes(r.id));
   const sharedWith = Object.keys(me.sharing).flatMap(
     (id) => organizations.find((o) => o.id === id) ?? [],
@@ -67,46 +68,80 @@ export default function MePage() {
         )}
       </section>
 
-      <h2 className="mt-7 font-display text-2xl">What I share</h2>
-      <p className="mt-1 text-[17px] text-ink-soft">
-        You decide what each organization can see. You can change this at any time.
-      </p>
-      <div className="mt-3 space-y-3">
-        {sharedWith.map((org) => {
-          const sharing = me.sharing[org.id];
-          return (
-            <fieldset key={org.id} className="rounded-2xl border border-sand-200 bg-white p-4">
-              <legend className="sr-only">{org.name}</legend>
-              <p className="font-semibold" aria-hidden>
-                {org.name}
-              </p>
-              <ul className="mt-2 space-y-2.5">
-                {SHARE.map((o) => (
-                  <li key={o.key} className="flex items-center justify-between gap-3">
-                    <span>{o.label}</span>
-                    <Switch
-                      label={`Share ${o.label.toLowerCase()} with ${org.name}`}
-                      checked={sharing[o.key]}
-                      onChange={(value) =>
-                        setSharing(me.id, org.id, { ...sharing, [o.key]: value })
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-            </fieldset>
-          );
-        })}
-      </div>
+      {connected ? (
+        <>
+          <h2 className="mt-7 font-display text-2xl">What I share</h2>
+          <p className="mt-1 text-[17px] text-ink-soft">
+            You decide what each organization can see. You can change this at
+            any time.
+          </p>
+          <div className="mt-3 space-y-3">
+            {sharedWith.map((org) => {
+              const sharing = me.sharing[org.id];
+              return (
+                <fieldset
+                  key={org.id}
+                  className="rounded-2xl border border-sand-200 bg-white p-4"
+                >
+                  <legend className="sr-only">{org.name}</legend>
+                  <p className="font-semibold" aria-hidden>
+                    {org.name}
+                  </p>
+                  <ul className="mt-2 space-y-2.5">
+                    {SHARE.map((o) => (
+                      <li
+                        key={o.key}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span>{o.label}</span>
+                        <Switch
+                          label={`Share ${o.label.toLowerCase()} with ${org.name}`}
+                          checked={sharing[o.key]}
+                          onChange={(value) =>
+                            setSharing(me.id, org.id, {
+                              ...sharing,
+                              [o.key]: value,
+                            })
+                          }
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </fieldset>
+              );
+            })}
+          </div>
 
-      <h2 className="mt-7 font-display text-2xl">My caseworker</h2>
-      <div className="mt-3 rounded-2xl border border-sand-200 bg-white p-4">
-        <p className="font-semibold">{caseworker.name}</p>
-        <p className="text-ink-soft">{caseworker.role}, Brooklyn Bridges Reentry Center</p>
-        <Link href="/app/messages" className={`${bigSecondary} mt-3`}>
-          Message {caseworker.firstName}
-        </Link>
-      </div>
+          <h2 className="mt-7 font-display text-2xl">My caseworker</h2>
+          <div className="mt-3 rounded-2xl border border-sand-200 bg-white p-4">
+            <p className="font-semibold">{caseworker.name}</p>
+            <p className="text-ink-soft">
+              {caseworker.role}, Brooklyn Bridges Reentry Center
+            </p>
+            <Link href="/app/messages" className={`${bigSecondary} mt-3`}>
+              Message {caseworker.firstName}
+            </Link>
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 className="mt-7 font-display text-2xl">What I share</h2>
+          <p className="mt-1 text-[17px] text-ink-soft">
+            Nothing. You are using Entri on your own, and no organization can
+            see your profile, your plan or your progress.
+          </p>
+          <h2 className="mt-7 font-display text-2xl">My caseworker</h2>
+          <div className="mt-3 rounded-2xl border border-sand-200 bg-white p-4">
+            <p>
+              You do not have a caseworker, and you do not need one to use
+              Entri. If you want a person to help, you can ask for one.
+            </p>
+            <Link href="/app/caseworker" className={`${bigSecondary} mt-3`}>
+              Get a caseworker
+            </Link>
+          </div>
+        </>
+      )}
 
       <h2 className="mt-7 font-display text-2xl">Saved places</h2>
       {saved.length === 0 ? (

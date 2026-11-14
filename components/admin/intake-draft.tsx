@@ -1,15 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { TierBadge } from "@/components/admin/resource-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditableList, move } from "@/components/ui/editable-list";
-import { SelectField, TextArea, TextField, inputClass } from "@/components/ui/field";
+import {
+  SelectField,
+  TextArea,
+  TextField,
+  inputClass,
+} from "@/components/ui/field";
 import type { IntakeDraft } from "@/lib/ai/schemas";
 import { useDemo } from "@/lib/demo/store";
-import { BOROUGHS, NEED_CHIPS, type Borough, type Need } from "@/lib/demo/types";
+import {
+  BOROUGHS,
+  NEED_CHIPS,
+  type Borough,
+  type Need,
+} from "@/lib/demo/types";
 
 // The draft as the caseworker edits it. Each step carries a key so React
 // can follow it when steps are reordered.
@@ -55,7 +73,9 @@ function StepCard({
   const resources = useDemo((s) => s.resources);
   // A step added by hand opens ready to fill in.
   const [editing, setEditing] = useState(step.title === "");
-  const linked = step.resourceIds.flatMap((id) => resources.find((r) => r.id === id) ?? []);
+  const linked = step.resourceIds.flatMap(
+    (id) => resources.find((r) => r.id === id) ?? [],
+  );
 
   return (
     <li className="rounded-lg border border-sand-200 bg-paper p-4">
@@ -105,7 +125,9 @@ function StepCard({
                         onClick={() =>
                           onChange({
                             ...step,
-                            resourceIds: step.resourceIds.filter((x) => x !== r.id),
+                            resourceIds: step.resourceIds.filter(
+                              (x) => x !== r.id,
+                            ),
                           })
                         }
                       >
@@ -120,7 +142,10 @@ function StepCard({
                   value=""
                   onChange={(e) =>
                     e.target.value &&
-                    onChange({ ...step, resourceIds: [...step.resourceIds, e.target.value] })
+                    onChange({
+                      ...step,
+                      resourceIds: [...step.resourceIds, e.target.value],
+                    })
                   }
                 >
                   <option value="">Link a resource</option>
@@ -151,7 +176,8 @@ function StepCard({
               )}
               {step.bring.length > 0 && (
                 <p className="mt-1 text-[15px]">
-                  <span className="font-semibold">Bring:</span> {step.bring.join(", ")}
+                  <span className="font-semibold">Bring:</span>{" "}
+                  {step.bring.join(", ")}
                 </p>
               )}
               {linked.length > 0 && (
@@ -320,7 +346,8 @@ export function IntakeDraftEditor({
             className={`${inputClass} mt-2 max-w-xs`}
             value=""
             onChange={(e) =>
-              e.target.value && set("needs", [...draft.needs, e.target.value as Need])
+              e.target.value &&
+              set("needs", [...draft.needs, e.target.value as Need])
             }
           >
             <option value="">Add a need</option>
@@ -359,7 +386,10 @@ export function IntakeDraftEditor({
             if (!r) return null;
             const org = organizations.find((o) => o.id === r.orgId);
             return (
-              <li key={m.resourceId} className="rounded-lg border border-sand-200 bg-paper p-3.5">
+              <li
+                key={m.resourceId}
+                className="rounded-lg border border-sand-200 bg-paper p-3.5"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold leading-snug">{r.name}</p>
@@ -374,7 +404,9 @@ export function IntakeDraftEditor({
                     onClick={() =>
                       set(
                         "matches",
-                        draft.matches.filter((x) => x.resourceId !== m.resourceId),
+                        draft.matches.filter(
+                          (x) => x.resourceId !== m.resourceId,
+                        ),
                       )
                     }
                   >
@@ -383,7 +415,9 @@ export function IntakeDraftEditor({
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   <TierBadge org={org} />
-                  {r.fairChance && <Badge tone="moss">Fair-chance employer</Badge>}
+                  {r.fairChance && (
+                    <Badge tone="moss">Fair-chance employer</Badge>
+                  )}
                 </div>
                 <p className="mt-1.5 text-[15px]">{m.reason}</p>
               </li>

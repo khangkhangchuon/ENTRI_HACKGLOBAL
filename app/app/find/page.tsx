@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowLeft,
   Briefcase,
+  ChevronRight,
   GraduationCap,
+  HeartHandshake,
   HeartPulse,
   Home,
   IdCard,
@@ -15,7 +18,7 @@ import { inputClass } from "@/components/ui/field";
 import { Screen } from "@/components/user/app-shell";
 import { UserResourceCard } from "@/components/user/resource-card";
 import { selectMainClient, useDemo } from "@/lib/demo/store";
-import { CATEGORY_LABELS, type Category } from "@/lib/demo/types";
+import { CATEGORY_LABELS, onCaseload, type Category } from "@/lib/demo/types";
 
 const TILES: { id: Category; icon: typeof Home }[] = [
   { id: "jobs", icon: Briefcase },
@@ -30,6 +33,8 @@ export default function FindPage() {
   const me = useDemo(selectMainClient);
   const resources = useDemo((s) => s.resources);
   const organizations = useDemo((s) => s.organizations);
+  const caseworker = useDemo((s) => s.caseworker);
+  const connected = onCaseload(me);
   const [category, setCategory] = useState<Category | null>(null);
   const [query, setQuery] = useState("");
 
@@ -45,10 +50,16 @@ export default function FindPage() {
         .includes(q);
     })
     // Places in the person's own borough come first.
-    .sort((a, b) => Number(b.borough === me.borough) - Number(a.borough === me.borough));
+    .sort(
+      (a, b) =>
+        Number(b.borough === me.borough) - Number(a.borough === me.borough),
+    );
 
   return (
-    <Screen title="Find help" intro="Places across the whole network, in one list.">
+    <Screen
+      title="Find help"
+      intro="Places across the whole network, in one list."
+    >
       <div className="relative">
         <Search
           className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-soft"
@@ -63,6 +74,30 @@ export default function FindPage() {
           className={`${inputClass} py-3 pl-11 text-lg`}
         />
       </div>
+
+      {!searching && (
+        <Link
+          href={connected ? "/app/messages" : "/app/caseworker"}
+          className="mt-4 flex items-center gap-3.5 rounded-2xl border-2 border-ember-400 bg-white p-4"
+        >
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-ember-100 text-ember-700">
+            <HeartHandshake className="h-7 w-7" aria-hidden />
+          </span>
+          <span className="flex-1">
+            <span className="block font-semibold">
+              {connected
+                ? `Message ${caseworker.firstName}`
+                : "Get a caseworker"}
+            </span>
+            <span className="block text-[17px] text-ink-soft">
+              {connected
+                ? "Your caseworker at Brooklyn Bridges"
+                : "A real person to help with your plan. Free, and your choice."}
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 text-ink-soft" aria-hidden />
+        </Link>
+      )}
 
       {!searching ? (
         <div className="mt-4 grid grid-cols-2 gap-3 @2xl:grid-cols-3">
@@ -106,7 +141,8 @@ export default function FindPage() {
           </div>
           {results.length === 0 && (
             <p className="mt-6 text-ink-soft">
-              Nothing matches that yet. Try a shorter word, or ask Entri in your own words.
+              Nothing matches that yet. Try a shorter word, or ask Entri in your
+              own words.
             </p>
           )}
         </>

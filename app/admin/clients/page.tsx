@@ -4,11 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import clsx from "clsx";
 import { Search } from "lucide-react";
-import { ProgressBar, StatusBadge, WhenReady, fullName } from "@/components/admin/shared";
+import {
+  ProgressBar,
+  StatusBadge,
+  WhenReady,
+  fullName,
+} from "@/components/admin/shared";
 import { buttonClass } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
 import { inputClass } from "@/components/ui/field";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import type { ClientStatus } from "@/lib/demo/types";
 import { timeAgo } from "@/lib/format";
 
@@ -20,7 +25,8 @@ const FILTERS: { id: "all" | ClientStatus; label: string }[] = [
 ];
 
 function Clients() {
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
+  const homeOrgId = useDemo((s) => s.homeOrgId);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | ClientStatus>("all");
 
@@ -37,7 +43,10 @@ function Clients() {
         title="Clients"
         intro={`${clients.length} people on your caseload at Brooklyn Bridges.`}
       >
-        <Link href="/admin/intake?client=new" className={buttonClass("primary")}>
+        <Link
+          href="/admin/intake?client=new"
+          className={buttonClass("primary")}
+        >
           New client
         </Link>
       </PageHeader>
@@ -57,7 +66,11 @@ function Clients() {
             className={clsx(inputClass, "pl-9")}
           />
         </div>
-        <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-1.5">
+        <div
+          role="group"
+          aria-label="Filter by status"
+          className="flex flex-wrap gap-1.5"
+        >
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -81,17 +94,29 @@ function Clients() {
         <table className="w-full min-w-[720px] text-left text-[15px]">
           <thead className="border-b border-sand-200 text-sm text-ink-soft">
             <tr>
-              <th scope="col" className="px-4 py-3 font-semibold">Name</th>
-              <th scope="col" className="px-4 py-3 font-semibold">Current step</th>
-              <th scope="col" className="px-4 py-3 font-semibold">Progress</th>
-              <th scope="col" className="px-4 py-3 font-semibold">Last check-in</th>
-              <th scope="col" className="px-4 py-3 font-semibold">Status</th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Name
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Current step
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Progress
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Last check-in
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-sand-200">
             {rows.map((c) => {
               const current = c.plan.find((s) => s.status === "current");
               const done = c.plan.filter((s) => s.status === "done").length;
+              const share = c.sharing[homeOrgId];
+              const hidden = share && !(share.plan && share.progress);
               return (
                 <tr key={c.id} className="hover:bg-paper">
                   <th scope="row" className="px-4 py-3 font-normal">
@@ -104,7 +129,9 @@ function Clients() {
                     <div className="text-sm text-ink-soft">{c.borough}</div>
                   </th>
                   <td className="px-4 py-3">
-                    {c.planStatus === "none" ? (
+                    {hidden ? (
+                      <span className="text-ink-soft">Not shared</span>
+                    ) : c.planStatus === "none" ? (
                       <Link
                         href={`/admin/intake?client=${c.id}`}
                         className="font-semibold text-ember-700 hover:underline"
@@ -126,9 +153,13 @@ function Clients() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {c.plan.length > 0 && <ProgressBar done={done} total={c.plan.length} />}
+                    {c.plan.length > 0 && !hidden && (
+                      <ProgressBar done={done} total={c.plan.length} />
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{timeAgo(c.lastCheckIn)}</td>
+                  <td className="px-4 py-3 text-ink-soft">
+                    {timeAgo(c.lastCheckIn)}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={c.status} />
                   </td>
@@ -138,7 +169,9 @@ function Clients() {
           </tbody>
         </table>
         {rows.length === 0 && (
-          <p className="px-4 py-8 text-center text-ink-soft">No clients match that search.</p>
+          <p className="px-4 py-8 text-center text-ink-soft">
+            No clients match that search.
+          </p>
         )}
       </div>
     </>

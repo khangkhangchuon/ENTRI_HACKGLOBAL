@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, PageHeader, SectionTitle } from "@/components/ui/card";
 import type { GapFindings } from "@/lib/ai/schemas";
 import { useAi } from "@/lib/ai/use-ai";
-import { useDemo } from "@/lib/demo/store";
+import { useCaseload, useDemo } from "@/lib/demo/store";
 import type { DemoData } from "@/lib/demo/types";
 import { NEED_CHIPS } from "@/lib/demo/types";
 import { timeAgo } from "@/lib/format";
@@ -33,7 +33,7 @@ const requestBody = (data: DemoData) => ({
 
 function Gaps() {
   const seededAt = useDemo((s) => s.seededAt);
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
   const resources = useDemo((s) => s.resources);
   const organizations = useDemo((s) => s.organizations);
   const [target, setTarget] = useState<ReferralTarget | null>(null);

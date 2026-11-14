@@ -1,6 +1,10 @@
 import { Clock, MapPin, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { CATEGORY_LABELS, type Organization, type Resource } from "@/lib/demo/types";
+import {
+  CATEGORY_LABELS,
+  type Organization,
+  type Resource,
+} from "@/lib/demo/types";
 
 export function TierBadge({ org }: { org?: Organization }) {
   if (!org) return null;
@@ -28,7 +32,9 @@ export function ResourceCard({
         <TierBadge org={org} />
         {resource.fairChance && <Badge tone="moss">Fair-chance employer</Badge>}
       </div>
-      <h3 className="mt-2 text-lg font-semibold leading-snug">{resource.name}</h3>
+      <h3 className="mt-2 text-lg font-semibold leading-snug">
+        {resource.name}
+      </h3>
       <p className="text-sm text-ink-soft">{org?.name}</p>
       <p className="mt-2 text-[15px]">{resource.offers}</p>
       <dl className="mt-3 space-y-1 text-sm text-ink-soft">
@@ -57,7 +63,9 @@ export function ResourceCard({
       </dl>
       {(resource.payRange || resource.housingType || resource.capacity) && (
         <p className="mt-2 text-sm text-ink-soft">
-          {[resource.payRange, resource.housingType, resource.capacity].filter(Boolean).join(". ")}
+          {[resource.payRange, resource.housingType, resource.capacity]
+            .filter(Boolean)
+            .join(". ")}
         </p>
       )}
       <details className="mt-2 text-sm">
@@ -65,13 +73,17 @@ export function ResourceCard({
           Who it is for and how to apply
         </summary>
         <p className="mt-1.5 text-ink-soft">
-          <span className="font-semibold text-ink">Who it is for:</span> {resource.eligibility}
+          <span className="font-semibold text-ink">Who it is for:</span>{" "}
+          {resource.eligibility}
         </p>
         <p className="mt-1 text-ink-soft">
-          <span className="font-semibold text-ink">How to apply:</span> {resource.howToApply}
+          <span className="font-semibold text-ink">How to apply:</span>{" "}
+          {resource.howToApply}
         </p>
       </details>
-      {children && <div className="mt-auto flex flex-wrap gap-2 pt-4">{children}</div>}
+      {children && (
+        <div className="mt-auto flex flex-wrap gap-2 pt-4">{children}</div>
+      )}
     </article>
   );
 }

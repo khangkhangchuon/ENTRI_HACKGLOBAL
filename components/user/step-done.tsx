@@ -7,9 +7,10 @@ import { bigPrimary } from "@/components/user/app-shell";
 import { selectMainClient, useDemo } from "@/lib/demo/store";
 
 // Which step was just finished, if any. Kept only for the moment itself.
-const useCelebration = create<{ title: string | null; set: (title: string | null) => void }>(
-  (set) => ({ title: null, set: (title) => set({ title }) }),
-);
+const useCelebration = create<{
+  title: string | null;
+  set: (title: string | null) => void;
+}>((set) => ({ title: null, set: (title) => set({ title }) }));
 
 export function StepDoneButton({ stepId }: { stepId: string }) {
   const me = useDemo(selectMainClient);

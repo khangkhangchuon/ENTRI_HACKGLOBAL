@@ -11,6 +11,7 @@ import {
 import { bigSecondary } from "@/components/user/app-shell";
 import { StepDoneButton } from "@/components/user/step-done";
 import { selectMainClient, useDemo } from "@/lib/demo/store";
+import { onCaseload } from "@/lib/demo/types";
 import { greeting } from "@/lib/format";
 
 const DOORS = [
@@ -140,23 +141,25 @@ export default function HomePage() {
             ))}
           </nav>
 
-          <Link
-            href="/app/messages"
-            className="mt-5 flex items-center gap-3.5 rounded-2xl bg-sand-100 p-4"
-          >
-            <MessagesSquare
-              className="h-6 w-6 shrink-0 text-ember-700"
-              aria-hidden
-            />
-            <span>
-              <span className="block font-semibold">
-                Talk to {caseworker.firstName}
+          {onCaseload(me) && (
+            <Link
+              href="/app/messages"
+              className="mt-5 flex items-center gap-3.5 rounded-2xl bg-sand-100 p-4"
+            >
+              <MessagesSquare
+                className="h-6 w-6 shrink-0 text-ember-700"
+                aria-hidden
+              />
+              <span>
+                <span className="block font-semibold">
+                  Talk to {caseworker.firstName}
+                </span>
+                <span className="block text-[17px] text-ink-soft">
+                  Your caseworker at Brooklyn Bridges. A real person.
+                </span>
               </span>
-              <span className="block text-[17px] text-ink-soft">
-                Your caseworker at Brooklyn Bridges. A real person.
-              </span>
-            </span>
-          </Link>
+            </Link>
+          )}
         </div>
       </div>
     </div>

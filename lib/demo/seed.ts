@@ -217,8 +217,8 @@ export function buildSeed(now: Date): DemoData {
 
   // ---- Anchor clients -------------------------------------------------
 
-  // Marcus found Entri online and began a starter plan on his own. He met
-  // Diane this morning. She can make the plan personal with Smart Intake.
+  // Marcus found Entri online and began a starter plan on his own. He has
+  // no caseworker. He joins Diane's caseload only if he asks for one.
   const marcus: Client = {
     id: MAIN_CLIENT_ID,
     firstName: "Marcus",
@@ -238,7 +238,8 @@ export function buildSeed(now: Date): DemoData {
     plan: buildStarterPlan(MAIN_CLIENT_ID),
     intakeNotes: MARCUS_INTAKE_NOTES,
     caseNotes: [],
-    sharing: { [HOME_ORG_ID]: HOME_SHARING },
+    sharing: {},
+    connected: false,
   };
 
   const tanya: Client = {
@@ -464,13 +465,6 @@ export function buildSeed(now: Date): DemoData {
       kind: "intake",
       clientId: "cl-andre",
       text: "Andre joined your caseload. His intake notes are ready for Smart Intake.",
-    },
-    {
-      id: "act-marcus-intake",
-      at: at(0, 10),
-      kind: "intake",
-      clientId: MAIN_CLIENT_ID,
-      text: "Marcus joined Entri online and began a starter plan. His intake notes are ready for Smart Intake.",
     },
     {
       id: "act-tanya-referral",

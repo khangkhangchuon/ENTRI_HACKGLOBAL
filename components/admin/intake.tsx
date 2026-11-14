@@ -16,11 +16,15 @@ import { AiChip } from "@/components/ui/ai-draft";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Card, PageHeader } from "@/components/ui/card";
 import { SelectField, TextArea, TextField } from "@/components/ui/field";
-import { NOTES_MAX, type IntakeDraft, type IntakeRequest } from "@/lib/ai/schemas";
+import {
+  NOTES_MAX,
+  type IntakeDraft,
+  type IntakeRequest,
+} from "@/lib/ai/schemas";
 import { postAi } from "@/lib/ai/use-ai";
-import { MARCUS_SAVED_DRAFT } from "@/lib/demo/seed";
-import { useDemo } from "@/lib/demo/store";
-import { BOROUGHS, type Borough } from "@/lib/demo/types";
+import { MARCUS_INTAKE_NOTES, MARCUS_SAVED_DRAFT } from "@/lib/demo/seed";
+import { useCaseload, useDemo } from "@/lib/demo/store";
+import { BOROUGHS, onCaseload, type Borough } from "@/lib/demo/types";
 import { resourceBriefs } from "@/lib/insights/facts";
 
 type Phase =
@@ -39,7 +43,9 @@ const STAGES = [
 // One intake, from notes to approval. Remounted when another client is
 // picked, so each intake starts clean.
 function IntakeFlow({ clientId }: { clientId: string | null }) {
-  const client = useDemo((s) => s.clients.find((c) => c.id === clientId));
+  const client = useDemo((s) =>
+    s.clients.find((c) => c.id === clientId && onCaseload(c)),
+  );
   const mainClientId = useDemo((s) => s.mainClientId);
   const createClient = useDemo((s) => s.createClient);
   const approvePlan = useDemo((s) => s.approvePlan);
@@ -68,7 +74,10 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
       setDraft(toDraft(reply.data));
       setLastSource("ai");
       setPhase({ name: "review", source: "ai" });
-    } else if (clientId === mainClientId) {
+    } else if (
+      clientId === mainClientId &&
+      client?.intakeNotes === MARCUS_INTAKE_NOTES
+    ) {
       // The tour must be able to continue, so Marcus has a saved draft.
       setDraft(toDraft(MARCUS_SAVED_DRAFT));
       setLastSource("saved");
@@ -102,7 +111,8 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
 
   const approve = () => {
     if (!draft || !canApprove) return;
-    const clean = (items: string[]) => items.map((x) => x.trim()).filter(Boolean);
+    const clean = (items: string[]) =>
+      items.map((x) => x.trim()).filter(Boolean);
     const id =
       client?.id ??
       createClient({
@@ -130,7 +140,12 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
         keepInMind: clean(draft.keepInMind),
       },
     });
-    setPhase({ name: "approved", clientId: id, firstName, steps: steps.length });
+    setPhase({
+      name: "approved",
+      clientId: id,
+      firstName,
+      steps: steps.length,
+    });
     window.scrollTo({ top: 0 });
   };
 
@@ -138,15 +153,18 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
     return (
       <Card className="border-moss-600/40 bg-moss-100/60">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 h-7 w-7 shrink-0 text-moss-600" aria-hidden />
+          <CheckCircle2
+            className="mt-0.5 h-7 w-7 shrink-0 text-moss-600"
+            aria-hidden
+          />
           <div>
             <h2 className="font-display text-2xl">
               Approved. {phase.firstName} can see the personal plan now.
             </h2>
             <p className="mt-1 text-ink-soft">
-              The plan has {phase.steps} steps. {phase.firstName} sees one at a time, and steps
-              already finished stay finished. Your notes and the points to keep in mind stay on
-              your side.
+              The plan has {phase.steps} steps. {phase.firstName} sees one at a
+              time, and steps already finished stay finished. Your notes and the
+              points to keep in mind stay on your side.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {phase.clientId === mainClientId && (
@@ -154,7 +172,10 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
                   See it as Marcus
                 </Link>
               )}
-              <Link href={`/admin/clients/${phase.clientId}`} className={buttonClass()}>
+              <Link
+                href={`/admin/clients/${phase.clientId}`}
+                className={buttonClass()}
+              >
                 Open {phase.firstName}&apos;s page
               </Link>
               <Link href="/admin" className={buttonClass()}>
@@ -193,7 +214,11 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
                 : "Check every part. You can edit, reorder or remove anything. Nothing reaches the client until you approve."}
           </p>
           <div className="mt-6">
-            <IntakeDraftEditor draft={draft} onChange={setDraft} nameEditable={!client} />
+            <IntakeDraftEditor
+              draft={draft}
+              onChange={setDraft}
+              nameEditable={!client}
+            />
           </div>
         </div>
 
@@ -204,7 +229,9 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
               : "Add a name and at least one step before you approve."}
           </p>
           <div className="flex gap-2">
-            <Button onClick={() => setPhase({ name: "notes" })}>Back to the notes</Button>
+            <Button onClick={() => setPhase({ name: "notes" })}>
+              Back to the notes
+            </Button>
             <Button variant="primary" onClick={approve} disabled={!canApprove}>
               Approve and send to {firstName || "the client"}
             </Button>
@@ -267,7 +294,9 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
         <div aria-live="polite">
           {phase.name === "drafting" && (
             <div className="rounded-lg bg-sand-100 p-4">
-              <p className="font-semibold">Drafting. This can take up to a minute.</p>
+              <p className="font-semibold">
+                Drafting. This can take up to a minute.
+              </p>
               <ul className="mt-2 space-y-1.5 text-ink-soft">
                 {STAGES.map((s, i) => (
                   <li key={s} className="flex items-center gap-2">
@@ -285,7 +314,11 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
           {phase.name === "error" && (
             <div className="rounded-lg bg-amber-100 p-4 text-amber-700">
               <p>{phase.message}</p>
-              <button type="button" onClick={startBlank} className="mt-1 font-semibold underline">
+              <button
+                type="button"
+                onClick={startBlank}
+                className="mt-1 font-semibold underline"
+              >
                 Write the plan by hand instead
               </button>
             </div>
@@ -293,12 +326,18 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" variant="primary" disabled={tooShort || phase.name === "drafting"}>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={tooShort || phase.name === "drafting"}
+          >
             <Sparkles className="h-4 w-4" aria-hidden />
             {draft ? "Draft again" : "Draft profile and plan"}
           </Button>
           {draft && phase.name === "notes" && (
-            <Button onClick={() => setPhase({ name: "review", source: lastSource })}>
+            <Button
+              onClick={() => setPhase({ name: "review", source: lastSource })}
+            >
               Return to the draft
             </Button>
           )}
@@ -313,7 +352,7 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
 
 function Intake() {
   const params = useSearchParams();
-  const clients = useDemo((s) => s.clients);
+  const clients = useCaseload();
   const waiting = clients.filter((c) => c.planStatus !== "approved");
 
   const asked = params.get("client");
@@ -329,7 +368,7 @@ function Intake() {
       title: fullName(c),
       sub:
         c.planStatus === "starter"
-          ? "On a starter plan. Notes are ready."
+          ? "Asked for a caseworker online. On a starter plan."
           : "Waiting for a plan. Notes are ready.",
     })),
     { id: "new", title: "New client", sub: "Start from your own notes." },
@@ -342,7 +381,11 @@ function Intake() {
         intro="Turn rough notes from a first meeting into a draft profile and a step-by-step plan. You stay in charge of what the client sees."
       />
 
-      <div role="radiogroup" aria-label="Who is this intake for?" className="mt-6 flex flex-wrap gap-3">
+      <div
+        role="radiogroup"
+        aria-label="Who is this intake for?"
+        className="mt-6 flex flex-wrap gap-3"
+      >
         {options.map((o) => (
           <button
             key={o.id}
@@ -352,10 +395,14 @@ function Intake() {
             onClick={() => setPicked(o.id)}
             className={clsx(
               "flex min-w-52 items-center gap-3 rounded-xl border-2 bg-white px-4 py-3 text-left transition-colors",
-              picked === o.id ? "border-ember-500" : "border-sand-200 hover:border-sand-300",
+              picked === o.id
+                ? "border-ember-500"
+                : "border-sand-200 hover:border-sand-300",
             )}
           >
-            {o.id === "new" && <UserPlus className="h-5 w-5 text-ink-soft" aria-hidden />}
+            {o.id === "new" && (
+              <UserPlus className="h-5 w-5 text-ink-soft" aria-hidden />
+            )}
             <span>
               <span className="block font-semibold">{o.title}</span>
               <span className="block text-sm text-ink-soft">{o.sub}</span>

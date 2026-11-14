@@ -29,7 +29,9 @@ export function ResourceForm({
   const addResource = useDemo((s) => s.addResource);
   const updateResource = useDemo((s) => s.updateResource);
 
-  const [category, setCategory] = useState<Category>(resource?.category ?? "jobs");
+  const [category, setCategory] = useState<Category>(
+    resource?.category ?? "jobs",
+  );
   const [services, setServices] = useState<Need[]>(
     resource?.services ?? CATEGORY_NEEDS.jobs,
   );
@@ -67,9 +69,12 @@ export function ResourceForm({
       contact: f.contact.trim(),
       hours: f.hours.trim() || undefined,
       fairChance: category === "jobs" ? fairChance : undefined,
-      payRange: category === "jobs" ? f.payRange.trim() || undefined : undefined,
-      housingType: category === "housing" ? f.housingType.trim() || undefined : undefined,
-      capacity: category === "housing" ? f.capacity.trim() || undefined : undefined,
+      payRange:
+        category === "jobs" ? f.payRange.trim() || undefined : undefined,
+      housingType:
+        category === "housing" ? f.housingType.trim() || undefined : undefined,
+      capacity:
+        category === "housing" ? f.capacity.trim() || undefined : undefined,
     };
     if (resource) {
       updateResource(resource.id, values);
@@ -105,7 +110,11 @@ export function ResourceForm({
             </option>
           ))}
         </SelectField>
-        <SelectField label="Borough" value={f.borough} onChange={set("borough")}>
+        <SelectField
+          label="Borough"
+          value={f.borough}
+          onChange={set("borough")}
+        >
           {BOROUGHS.map((b) => (
             <option key={b} value={b}>
               {b}
@@ -129,7 +138,9 @@ export function ResourceForm({
                   checked={services.includes(n)}
                   onChange={(e) =>
                     setServices(
-                      e.target.checked ? [...services, n] : services.filter((s) => s !== n),
+                      e.target.checked
+                        ? [...services, n]
+                        : services.filter((s) => s !== n),
                     )
                   }
                 />

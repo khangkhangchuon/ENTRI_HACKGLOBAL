@@ -16,7 +16,10 @@ export function WhenReady({ children }: { children: React.ReactNode }) {
 export const fullName = (c: Pick<Client, "firstName" | "lastName">) =>
   `${c.firstName} ${c.lastName}`;
 
-const STATUS: Record<ClientStatus, { label: string; tone: "moss" | "amber" | "steel" }> = {
+const STATUS: Record<
+  ClientStatus,
+  { label: string; tone: "moss" | "amber" | "steel" }
+> = {
   "on-track": { label: "On track", tone: "moss" },
   "needs-attention": { label: "Needs attention", tone: "amber" },
   new: { label: "New", tone: "steel" },
@@ -27,7 +30,10 @@ export function StatusBadge({ status }: { status: ClientStatus }) {
   return <Badge tone={s.tone}>{s.label}</Badge>;
 }
 
-const REFERRAL: Record<ReferralStatus, { label: string; tone: "moss" | "ember" | "steel" }> = {
+const REFERRAL: Record<
+  ReferralStatus,
+  { label: string; tone: "moss" | "ember" | "steel" }
+> = {
   sent: { label: "Sent", tone: "steel" },
   accepted: { label: "Accepted", tone: "ember" },
   completed: { label: "Completed", tone: "moss" },
@@ -50,7 +56,10 @@ export function ProgressBar({ done, total }: { done: number; total: number }) {
         aria-valuenow={done}
         aria-label={`${done} of ${total} steps done`}
       >
-        <div className="h-full rounded-full bg-moss-600" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full rounded-full bg-moss-600"
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <span className="text-sm text-ink-soft">
         {done} of {total}

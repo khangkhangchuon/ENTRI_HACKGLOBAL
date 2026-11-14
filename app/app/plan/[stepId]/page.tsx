@@ -30,7 +30,9 @@ export default function StepPage() {
     );
   }
 
-  const places = step.resourceIds.flatMap((id) => resources.find((r) => r.id === id) ?? []);
+  const places = step.resourceIds.flatMap(
+    (id) => resources.find((r) => r.id === id) ?? [],
+  );
 
   return (
     <div className="px-5 pb-8 pt-4 text-lg">
@@ -52,13 +54,19 @@ export default function StepPage() {
         </p>
       )}
 
-      <h2 className="mt-5 text-[15px] font-semibold text-ink-soft">What to do</h2>
+      <h2 className="mt-5 text-[15px] font-semibold text-ink-soft">
+        What to do
+      </h2>
       <p>{step.what}</p>
-      <h2 className="mt-4 text-[15px] font-semibold text-ink-soft">Where to go</h2>
+      <h2 className="mt-4 text-[15px] font-semibold text-ink-soft">
+        Where to go
+      </h2>
       <p>{step.where}</p>
       {step.bring.length > 0 && (
         <>
-          <h2 className="mt-4 text-[15px] font-semibold text-ink-soft">What to bring</h2>
+          <h2 className="mt-4 text-[15px] font-semibold text-ink-soft">
+            What to bring
+          </h2>
           <ul className="list-disc pl-5">
             {step.bring.map((b) => (
               <li key={b}>{b}</li>
@@ -77,7 +85,9 @@ export default function StepPage() {
 
       {places.length > 0 && (
         <>
-          <h2 className="mt-7 font-display text-2xl">Places that help with this</h2>
+          <h2 className="mt-7 font-display text-2xl">
+            Places that help with this
+          </h2>
           <div className="mt-3 grid gap-3 @2xl:grid-cols-2">
             {places.map((r) => (
               <UserResourceCard key={r.id} resource={r} />

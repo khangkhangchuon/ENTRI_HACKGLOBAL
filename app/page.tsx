@@ -19,7 +19,7 @@ import { LoopDiagram } from "@/components/landing/loop-diagram";
 import { PhotoRotator } from "@/components/landing/photo-rotator";
 
 // Placeholder until Chuon supplies the real contact address.
-const CONTACT_EMAIL = "hello@example.com";
+const CONTACT_EMAIL = "phuckhangchuon@gmail.com";
 
 const STATS = [
   {

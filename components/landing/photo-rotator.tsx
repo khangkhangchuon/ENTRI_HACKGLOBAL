@@ -9,30 +9,22 @@ import clsx from "clsx";
 // `focus` says which part of the photo to keep in view when it is cropped.
 const PHOTOS = [
   {
-    src: "/photos/street-bedroll.jpg",
-    alt: "A person seen from behind, walking down a city street and carrying a rolled-up sleeping bag.",
-    focus: "object-top",
-  },
-  {
     src: "/photos/seeking-kindness.webp",
     alt: "A bearded man kneeling on a subway platform. He holds a cardboard sign that reads: Seeking human kindness.",
     focus: "object-[78%_center]",
   },
-  {
-    src: "/photos/portrait-street.jpg",
-    alt: "An older man with a grey beard and a bandana, sitting outside a shop and smiling slightly.",
-    focus: "object-center",
-  },
 ];
 
 const SECONDS = 5;
+// With a single photo there is nothing to rotate, so the controls are hidden.
+const MANY = PHOTOS.length > 1;
 
 export function PhotoRotator({ className }: { className?: string }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
 
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || !MANY) return;
     // Visitors who ask for reduced motion choose photos themselves.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = setInterval(
@@ -63,42 +55,48 @@ export function PhotoRotator({ className }: { className?: string }) {
       </div>
 
       <div className="mt-3 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setPlaying((p) => !p)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-dusk-900 hover:bg-white"
-          aria-label={playing ? "Pause the photos" : "Play the photos"}
-        >
-          {playing ? (
-            <Pause className="h-4 w-4" aria-hidden />
-          ) : (
-            <Play className="h-4 w-4" aria-hidden />
-          )}
-        </button>
-        <div className="flex gap-2">
-          {PHOTOS.map((photo, i) => (
-            <button
-              key={photo.src}
-              type="button"
-              onClick={() => {
-                setIndex(i);
-                setPlaying(false);
-              }}
-              aria-label={`Show photo ${i + 1} of ${PHOTOS.length}`}
-              aria-current={i === index}
-              className="flex h-9 w-6 items-center justify-center"
-            >
-              <span
-                className={clsx(
-                  "h-2.5 rounded-full transition-all",
-                  i === index ? "w-6 bg-dusk-900" : "w-2.5 bg-mist-300",
-                )}
-              />
-            </button>
-          ))}
-        </div>
+        {MANY && (
+          <button
+            type="button"
+            onClick={() => setPlaying((p) => !p)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-dusk-900 hover:bg-white"
+            aria-label={playing ? "Pause the photos" : "Play the photos"}
+          >
+            {playing ? (
+              <Pause className="h-4 w-4" aria-hidden />
+            ) : (
+              <Play className="h-4 w-4" aria-hidden />
+            )}
+          </button>
+        )}
+        {MANY && (
+          <div className="flex gap-2">
+            {PHOTOS.map((photo, i) => (
+              <button
+                key={photo.src}
+                type="button"
+                onClick={() => {
+                  setIndex(i);
+                  setPlaying(false);
+                }}
+                aria-label={`Show photo ${i + 1} of ${PHOTOS.length}`}
+                aria-current={i === index}
+                className="flex h-9 w-6 items-center justify-center"
+              >
+                <span
+                  className={clsx(
+                    "h-2.5 rounded-full transition-all",
+                    i === index ? "w-6 bg-dusk-900" : "w-2.5 bg-mist-300",
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+        )}
         <figcaption className="ml-auto text-right text-sm text-dusk-600">
-          Photos are illustrative. The people shown are not connected to Entri.
+          {MANY
+            ? "Photos are illustrative. The people shown are not connected to Entri."
+            : "The photo is illustrative. The person shown is not connected to Entri."}
         </figcaption>
       </div>
     </figure>

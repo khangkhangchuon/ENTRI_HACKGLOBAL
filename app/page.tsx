@@ -439,7 +439,7 @@ export default function LandingPage() {
             <p className="mt-3">
               This is a demonstration. All people and data in the demos are fictional.
             </p>
-            <p className="mt-2">Photos: Matt Collamer on Unsplash, iStock.</p>
+            <p className="mt-2">Photo: Matt Collamer on Unsplash.</p>
           </div>
         </div>
       </footer>

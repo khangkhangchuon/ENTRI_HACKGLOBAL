@@ -4,7 +4,11 @@
 //   npx tsx tests/live-checks.ts
 // Each run makes about a dozen AI requests.
 
-import { ANDRE_INTAKE_NOTES, MARCUS_INTAKE_NOTES, buildSeed } from "../lib/demo/seed";
+import {
+  ANDRE_INTAKE_NOTES,
+  MARCUS_INTAKE_NOTES,
+  buildSeed,
+} from "../lib/demo/seed";
 import { caseloadFacts, gapFacts, resourceBriefs } from "../lib/insights/facts";
 import type {
   AiReply,
@@ -24,7 +28,9 @@ const AVOID = /—|ex-con|ex-offender|felon|inmate|criminal|offender/i;
 let failed = 0;
 const report = (ok: boolean, label: string, note = "") => {
   if (!ok) failed += 1;
-  console.log(`${ok ? "PASS" : "FAIL"}  ${label}${note ? `\n      ${note}` : ""}`);
+  console.log(
+    `${ok ? "PASS" : "FAIL"}  ${label}${note ? `\n      ${note}` : ""}`,
+  );
 };
 
 async function post<T>(path: string, body: unknown): Promise<AiReply<T>> {
@@ -33,7 +39,19 @@ async function post<T>(path: string, body: unknown): Promise<AiReply<T>> {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
-  return (await res.json()) as AiReply<T>;
+  const reply = (await res.json()) as AiReply<T>;
+  // With PREPARED=1 the checks run against plan B. Otherwise a prepared
+  // reply means the AI was not reached, which these checks count as a fail.
+  if (reply.ok && Boolean(reply.prepared) !== (process.env.PREPARED === "1")) {
+    return {
+      ok: false,
+      code: "unavailable",
+      message: reply.prepared
+        ? "Got a prepared reply, not the AI."
+        : "Got the AI, not plan B.",
+    };
+  }
+  return reply;
 }
 
 const FRESH_NOTES: { label: string; notes: string; needs: string[] }[] = [
@@ -68,9 +86,13 @@ async function intake(label: string, notes: string, needs: string[]) {
     notes,
     resources: resourceBriefs(data),
   });
-  if (!reply.ok) return report(false, `Intake: ${label}`, `${reply.code}: ${reply.message}`);
+  if (!reply.ok)
+    return report(false, `Intake: ${label}`, `${reply.code}: ${reply.message}`);
   const d = reply.data;
-  const used = [...d.matches.map((m) => m.resourceId), ...d.steps.flatMap((s) => s.resourceIds)];
+  const used = [
+    ...d.matches.map((m) => m.resourceId),
+    ...d.steps.flatMap((s) => s.resourceIds),
+  ];
   const unknown = used.filter((r) => !resourceIds.has(r));
   const missing = needs.filter((n) => !d.needs.includes(n as never));
   const text = JSON.stringify(d);
@@ -81,27 +103,43 @@ async function intake(label: string, notes: string, needs: string[]) {
     AVOID.test(text) ? "uses an avoided word or an em-dash" : "",
   ].filter(Boolean);
   report(problems.length === 0, `Intake: ${label}`, problems.join("; "));
-  console.log(`      ${d.firstName} ${d.lastName}, ${d.borough}. Needs: ${d.needs.join(", ")}`);
+  console.log(
+    `      ${d.firstName} ${d.lastName}, ${d.borough}. Needs: ${d.needs.join(", ")}`,
+  );
   console.log(`      Steps: ${d.steps.map((s) => s.title).join(" > ")}`);
-  console.log(`      Matches: ${d.matches.map((m) => m.resourceId).join(", ")}`);
+  console.log(
+    `      Matches: ${d.matches.map((m) => m.resourceId).join(", ")}`,
+  );
   console.log(`      Summary: ${d.summary.slice(0, 220)}`);
 }
 
 async function caseload(run: number) {
   const clients = caseloadFacts(data);
   const reply = await post<CaseloadDigest>("/api/caseload", { clients });
-  if (!reply.ok) return report(false, `Caseload run ${run}`, `${reply.code}: ${reply.message}`);
+  if (!reply.ok)
+    return report(
+      false,
+      `Caseload run ${run}`,
+      `${reply.code}: ${reply.message}`,
+    );
   const flags = reply.data.flags;
   const jamal = data.clients.find((c) => c.firstName === "Jamal");
-  const unknown = flags.filter((f) => !clientIds.has(f.clientId)).map((f) => f.clientId);
+  const unknown = flags
+    .filter((f) => !clientIds.has(f.clientId))
+    .map((f) => f.clientId);
   const problems = [
-    jamal && !flags.some((f) => f.clientId === jamal.id) ? "Jamal is not flagged" : "",
+    jamal && !flags.some((f) => f.clientId === jamal.id)
+      ? "Jamal is not flagged"
+      : "",
     unknown.length ? `unknown clients: ${unknown.join(", ")}` : "",
     flags.length < 2 || flags.length > 4 ? `${flags.length} flags` : "",
-    AVOID.test(JSON.stringify(flags)) ? "uses an avoided word or an em-dash" : "",
+    AVOID.test(JSON.stringify(flags))
+      ? "uses an avoided word or an em-dash"
+      : "",
   ].filter(Boolean);
   report(problems.length === 0, `Caseload run ${run}`, problems.join("; "));
-  for (const f of flags) console.log(`      [${f.kind}] ${f.headline} | ${f.detail}`);
+  for (const f of flags)
+    console.log(`      [${f.kind}] ${f.headline} | ${f.detail}`);
 }
 
 async function gaps(run: number) {
@@ -116,25 +154,42 @@ async function gaps(run: number) {
       candidates: g.candidates,
     })),
   });
-  if (!reply.ok) return report(false, `Gaps run ${run}`, `${reply.code}: ${reply.message}`);
+  if (!reply.ok)
+    return report(false, `Gaps run ${run}`, `${reply.code}: ${reply.message}`);
   const found = reply.data.findings;
   const bad = found.filter((f) => {
-    const fact = facts.find((g) => g.need === f.need && g.borough === f.borough);
-    return !fact || !fact.candidates.some((c) => c.resourceId === f.suggestedResourceId);
+    const fact = facts.find(
+      (g) => g.need === f.need && g.borough === f.borough,
+    );
+    return (
+      !fact ||
+      !fact.candidates.some((c) => c.resourceId === f.suggestedResourceId)
+    );
   });
   const problems = [
     !found.some((f) => f.borough === "Bronx" && f.need === "substance-use")
       ? "Bronx substance-use gap is missing"
       : "",
-    bad.length ? `findings not backed by the facts: ${bad.map((f) => `${f.need}/${f.borough}`).join(", ")}` : "",
-    AVOID.test(JSON.stringify(found)) ? "uses an avoided word or an em-dash" : "",
+    bad.length
+      ? `findings not backed by the facts: ${bad.map((f) => `${f.need}/${f.borough}`).join(", ")}`
+      : "",
+    AVOID.test(JSON.stringify(found))
+      ? "uses an avoided word or an em-dash"
+      : "",
   ].filter(Boolean);
   report(problems.length === 0, `Gaps run ${run}`, problems.join("; "));
-  for (const f of found) console.log(`      ${f.headline} -> ${f.suggestedResourceId}`);
+  for (const f of found)
+    console.log(`      ${f.headline} -> ${f.suggestedResourceId}`);
 }
 
 async function main() {
-  await intake("Marcus", MARCUS_INTAKE_NOTES, ["id", "phone", "banking", "housing", "jobs"]);
+  await intake("Marcus", MARCUS_INTAKE_NOTES, [
+    "id",
+    "phone",
+    "banking",
+    "housing",
+    "jobs",
+  ]);
   await intake("Andre", ANDRE_INTAKE_NOTES, ["housing", "legal", "benefits"]);
   for (const f of FRESH_NOTES) await intake(f.label, f.notes, f.needs);
   for (let i = 1; i <= REPEATS; i += 1) await caseload(i);

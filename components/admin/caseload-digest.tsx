@@ -27,7 +27,7 @@ export function CaseloadDigest() {
   const handled = useDemo((s) => s.handledFlagIds);
   const markFlagHandled = useDemo((s) => s.markFlagHandled);
 
-  const { data, status, message, generatedAt, run } = useAi<Digest>(
+  const { data, status, message, generatedAt, prepared, run } = useAi<Digest>(
     `caseload:${seededAt}`,
     "/api/caseload",
   );
@@ -61,7 +61,11 @@ export function CaseloadDigest() {
         <h2 id="digest-title" className="font-display text-xl">
           Caseload Intelligence
         </h2>
-        <AiChip />
+        <AiChip
+          label={
+            prepared ? "Prepared without AI. Needs your review." : undefined
+          }
+        />
         {loading && data && <Badge tone="steel">Updating</Badge>}
         <button
           type="button"
@@ -74,7 +78,9 @@ export function CaseloadDigest() {
         </button>
       </div>
       <p className="mt-1 text-sm text-ink-soft">
-        Who may need you today, drafted from your caseload data.
+        {prepared
+          ? "Who may need you today, picked by simple rules because the AI assistant is not available right now."
+          : "Who may need you today, drafted from your caseload data."}
         {generatedAt &&
           !loading &&
           ` Updated ${timeAgo(generatedAt).toLowerCase()}.`}
@@ -160,8 +166,9 @@ export function CaseloadDigest() {
                       ))}
                     </ul>
                     <p className="mt-2 text-sm text-ink-soft">
-                      These facts come straight from the caseload data. The AI
-                      chose this client and wrote the wording above.
+                      {prepared
+                        ? "These facts come straight from the caseload data. Simple rules chose this client and wrote the wording above."
+                        : "These facts come straight from the caseload data. The AI chose this client and wrote the wording above."}
                     </p>
                   </details>
                 </li>

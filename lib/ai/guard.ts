@@ -47,6 +47,9 @@ export async function handleAi<S extends z.ZodType, T>(
   // An answer that needs no AI. It is tried first, so it still works when
   // the AI cannot be reached.
   withoutAi?: (input: z.infer<S>) => T | null,
+  // Plan B: a result built by plain rules, used when the AI cannot be
+  // reached. The reply is marked as prepared so the screen can say so.
+  prepared?: (input: z.infer<S>) => T,
 ): Promise<Response> {
   const raw = await request.text().catch(() => "");
   if (!raw || raw.length > MAX_BODY_BYTES) return fail("invalid", 400);
@@ -66,11 +69,22 @@ export async function handleAi<S extends z.ZodType, T>(
     return Response.json(body);
   }
 
-  if (!hasKey()) return fail("unavailable", 503);
+  const planB = (code: AiErrorCode, status: number): Response => {
+    if (!prepared) return fail(code, status);
+    const body: AiReply<T> = {
+      ok: true,
+      data: prepared(parsed.data),
+      generatedAt: new Date().toISOString(),
+      prepared: true,
+    };
+    return Response.json(body);
+  };
+
+  if (!hasKey()) return planB("unavailable", 503);
 
   const visitor =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (!allowed(visitor)) return fail("busy", 429);
+  if (!allowed(visitor)) return planB("busy", 429);
 
   try {
     const data = await run(parsed.data);
@@ -78,10 +92,10 @@ export async function handleAi<S extends z.ZodType, T>(
     return Response.json(body);
   } catch (error) {
     if (error instanceof AiDeclined) return fail("declined", 200);
-    if (error instanceof Anthropic.RateLimitError) return fail("busy", 429);
+    if (error instanceof Anthropic.RateLimitError) return planB("busy", 429);
     // Log the kind of failure, never the request or the key.
     const status = error instanceof Anthropic.APIError ? error.status : undefined;
     console.error("[ai] request failed:", (error as Error)?.name, status ?? "");
-    return fail("unavailable", 503);
+    return planB("unavailable", 503);
   }
 }

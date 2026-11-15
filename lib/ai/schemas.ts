@@ -249,5 +249,7 @@ export interface AskAnswer {
 export type AiErrorCode = "unavailable" | "busy" | "invalid" | "declined";
 
 export type AiReply<T> =
-  | { ok: true; data: T; generatedAt: string }
+  // `prepared` is true when plain rules wrote the result because the AI
+  // could not be reached.
+  | { ok: true; data: T; generatedAt: string; prepared?: boolean }
   | { ok: false; code: AiErrorCode; message: string };

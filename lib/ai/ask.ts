@@ -1,9 +1,9 @@
 import "server-only";
-import { LIBRARY } from "@/lib/ask/library";
+import { asSource } from "@/lib/ask/prepared";
 import { findDocs, findListings } from "@/lib/ask/retrieve";
 import { CRISIS_TEXT, isCrisis, isLegal, LEGAL_TEXT, UNKNOWN_TEXT } from "@/lib/ask/safety";
 import { draftStructured, tidyLines } from "./client";
-import { AskDraft, type AskAnswer, type AskRequest, type AskSource } from "./schemas";
+import { AskDraft, type AskAnswer, type AskRequest } from "./schemas";
 
 const SYSTEM = `You are Ask Entri, a helper inside Entri, an app for people coming home from prison in New York City. A person asks a question in their own words. You answer only from the verified passages and network listings you are given for this question.
 
@@ -25,30 +25,6 @@ Choosing kind:
 - "crisis": the person may be in danger or may want to hurt themselves or someone else. Write one kind sentence only.
 
 offerAdvocate: set to true when the answer gives general information about rights at work or a record, because the person's own case may need a legal advocate. Otherwise false.`;
-
-const asSource = (id: string, listings: AskRequest["listings"]): AskSource | null => {
-  const doc = LIBRARY.find((d) => d.id === id);
-  if (doc) {
-    return {
-      id: doc.id,
-      title: doc.title,
-      source: doc.source,
-      url: doc.url,
-      checked: doc.checked,
-      passage: doc.text,
-    };
-  }
-  const l = listings.find((x) => x.id === id);
-  if (!l) return null;
-  return {
-    id: l.id,
-    title: `${l.name}, ${l.org}`,
-    source: "Entri network listing",
-    url: "/app/find",
-    checked: "demo data",
-    passage: `${l.offers} Where: ${l.address}, ${l.borough}. Contact: ${l.contact}. How to start: ${l.howToApply}`,
-  };
-};
 
 // Crisis and clearly legal questions get a fixed, careful reply with no AI.
 export function answerWithoutAi(input: AskRequest): AskAnswer | null {

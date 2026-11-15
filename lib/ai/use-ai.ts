@@ -9,6 +9,7 @@ import type { AiReply } from "./schemas";
 interface Saved<T> {
   data: T;
   generatedAt: string;
+  prepared?: boolean;
 }
 
 const memory = new Map<string, Saved<unknown>>();
@@ -55,6 +56,8 @@ export type AiStatus = "idle" | "loading" | "ready" | "error";
 export interface AiState<T> {
   data: T | null;
   generatedAt: string | null;
+  // True when plain rules wrote the result because the AI was not reached.
+  prepared: boolean;
   status: AiStatus;
   message: string | null;
 }
@@ -63,6 +66,7 @@ export function useAi<T>(key: string, path: string) {
   const [state, setState] = useState<AiState<T>>({
     data: null,
     generatedAt: null,
+    prepared: false,
     status: "idle",
     message: null,
   });
@@ -73,6 +77,7 @@ export function useAi<T>(key: string, path: string) {
       setState({
         data: previous?.data ?? null,
         generatedAt: previous?.generatedAt ?? null,
+        prepared: previous?.prepared ?? false,
         status: "loading",
         message: null,
       });
@@ -87,10 +92,12 @@ export function useAi<T>(key: string, path: string) {
       const reply = await pending;
 
       if (reply.ok) {
-        writeSaved(key, { data: reply.data, generatedAt: reply.generatedAt });
+        const prepared = reply.prepared ?? false;
+        writeSaved(key, { data: reply.data, generatedAt: reply.generatedAt, prepared });
         setState({
           data: reply.data,
           generatedAt: reply.generatedAt,
+          prepared,
           status: "ready",
           message: null,
         });
@@ -98,6 +105,7 @@ export function useAi<T>(key: string, path: string) {
         setState({
           data: previous?.data ?? null,
           generatedAt: previous?.generatedAt ?? null,
+          prepared: previous?.prepared ?? false,
           status: "error",
           message: reply.message,
         });

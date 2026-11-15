@@ -48,7 +48,7 @@ interface StepTemplate {
   resourceIds: string[];
 }
 
-const STEP_TEMPLATES: StepTemplate[] = [
+export const STEP_TEMPLATES: StepTemplate[] = [
   {
     key: "id",
     need: "id",
@@ -170,6 +170,90 @@ export const MARCUS_SAVED_DRAFT = {
     bring: t.bring,
     resourceIds: t.resourceIds,
   })),
+};
+
+// The same for Andre, the second person waiting for a first plan.
+export const ANDRE_SAVED_DRAFT = {
+  firstName: "Andre",
+  lastName: "K.",
+  borough: "Queens" as Borough,
+  summary:
+    "Released three days ago. Staying at a short-stay bed in Jamaica, Queens, with about three weeks left there. Has a valid state ID and his Social Security card. His prepaid phone minutes are almost out and no benefits have started.",
+  goal: "Get his license back and drive again.",
+  needs: ["phone", "housing", "benefits", "jobs", "legal", "training"] as Need[],
+  skills: ["Delivery driving (license expired)"],
+  documents: ["State ID", "Social Security card"],
+  keepInMind: [
+    "About three weeks left at the short-stay bed. Housing is urgent.",
+    "Wants to sort out visits with his daughter, who is 9. He was told he would be connected with legal help.",
+    "Quiet and polite. Takes notes on paper.",
+  ],
+  matches: [
+    {
+      resourceId: "res-connect-phone",
+      reason: "His prepaid minutes are almost out, and this is a free phone sign-up.",
+    },
+    {
+      resourceId: "res-hearth-brooklyn",
+      reason: "He needs a place to stay after the next three weeks. This is in another borough.",
+    },
+    {
+      resourceId: "res-hra-benefits",
+      reason: "No benefits have started, and he needs income soon.",
+    },
+    {
+      resourceId: "res-atlas-helper",
+      reason: "He has delivery experience, and a helper does not need a license.",
+    },
+    {
+      resourceId: "res-concourse-family",
+      reason: "He asked about family court and visits with his daughter.",
+    },
+  ],
+  steps: [
+    {
+      title: "Keep your phone working",
+      what: "Sign up for a free phone plan before your minutes run out, so offices and employers can reach you.",
+      where: "Connect Line Phone Access.",
+      bring: ["Your state ID"],
+      resourceIds: ["res-connect-phone"],
+    },
+    {
+      title: "Find your next place to stay",
+      what: "Apply for a room now, so you have somewhere to go when your three weeks are up.",
+      where: "Your caseworker sends a referral. Then you meet a housing counselor.",
+      bring: ["Your state ID", "Your Social Security card"],
+      resourceIds: ["res-hearth-brooklyn"],
+    },
+    {
+      title: "Apply for benefits",
+      what: "Apply for food assistance and health coverage. This can bring help quickly while you look for work.",
+      where: "A benefits helper can apply with you. Your caseworker will confirm the place.",
+      bring: ["Your state ID", "Your Social Security card"],
+      resourceIds: ["res-hra-benefits"],
+    },
+    {
+      title: "Apply for a job that pays soon",
+      what: "Apply for delivery helper work. You ride along and do not need a license for it.",
+      where: "Atlas, a fair-chance employer in the Entri network.",
+      bring: ["Your state ID", "Your Social Security card"],
+      resourceIds: ["res-atlas-helper"],
+    },
+    {
+      title: "Get help with visiting your daughter",
+      what: "Meet a family law helper about visits. They can look at your own situation.",
+      where: "Family law help in the Entri network. Your caseworker will make the referral.",
+      bring: ["Your state ID", "Any papers you have about visits"],
+      resourceIds: ["res-concourse-family"],
+    },
+    {
+      title: "Look into getting your license back",
+      what: "Find out what the DMV needs to renew your license, so you can drive for work again.",
+      where: "Your caseworker will confirm the place.",
+      bring: ["Your state ID", "Your old license, if you have it"],
+      resourceIds: [],
+    },
+  ],
 };
 
 export function buildSeed(now: Date): DemoData {

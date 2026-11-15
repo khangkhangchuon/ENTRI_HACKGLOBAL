@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshCw, Send } from "lucide-react";
-import { ReferralDialog, type ReferralTarget } from "@/components/admin/referral-dialog";
+import {
+  ReferralDialog,
+  type ReferralTarget,
+} from "@/components/admin/referral-dialog";
 import { TierBadge } from "@/components/admin/resource-card";
 import { WhenReady } from "@/components/admin/shared";
 import { AiChip } from "@/components/ui/ai-draft";
@@ -38,10 +41,8 @@ function Gaps() {
   const organizations = useDemo((s) => s.organizations);
   const [target, setTarget] = useState<ReferralTarget | null>(null);
 
-  const { data, status, message, generatedAt, run } = useAi<GapFindings>(
-    `gaps:${seededAt}`,
-    "/api/gaps",
-  );
+  const { data, status, message, generatedAt, prepared, run } =
+    useAi<GapFindings>(`gaps:${seededAt}`, "/api/gaps");
 
   // A fresh analysis on every visit.
   useEffect(() => {
@@ -67,7 +68,10 @@ function Gaps() {
         title="Gap Analysis"
         intro="What the people on your caseload need, compared with what the network offers near them."
       >
-        <Button onClick={() => run(requestBody(useDemo.getState()))} disabled={loading}>
+        <Button
+          onClick={() => run(requestBody(useDemo.getState()))}
+          disabled={loading}
+        >
           <RefreshCw className="h-4 w-4" aria-hidden />
           Run again
         </Button>
@@ -81,13 +85,20 @@ function Gaps() {
           <h2 id="findings-title" className="font-display text-xl">
             Unmet needs
           </h2>
-          <AiChip />
+          <AiChip
+            label={
+              prepared ? "Prepared without AI. Needs your review." : undefined
+            }
+          />
           {loading && data && <Badge tone="steel">Updating</Badge>}
         </div>
         <p className="mt-1 text-sm text-ink-soft">
-          The counts come from your caseload data. The AI words each finding and suggests who
-          could help. You decide whether to refer anyone.
-          {generatedAt && !loading && ` Updated ${timeAgo(generatedAt).toLowerCase()}.`}
+          {prepared
+            ? "The counts come from your caseload data. The AI assistant is not available right now, so simple rules worded each finding and picked who could help. You decide whether to refer anyone."
+            : "The counts come from your caseload data. The AI words each finding and suggests who could help. You decide whether to refer anyone."}
+          {generatedAt &&
+            !loading &&
+            ` Updated ${timeAgo(generatedAt).toLowerCase()}.`}
         </p>
 
         <div aria-live="polite" className="mt-4">
@@ -95,7 +106,10 @@ function Gaps() {
             <div className="space-y-3">
               <p className="text-ink-soft">Comparing needs with the network…</p>
               {[0, 1].map((i) => (
-                <div key={i} className="h-28 animate-pulse rounded-lg bg-sand-100" />
+                <div
+                  key={i}
+                  className="h-28 animate-pulse rounded-lg bg-sand-100"
+                />
               ))}
             </div>
           )}
@@ -110,15 +124,17 @@ function Gaps() {
 
           {data && findings.length === 0 && (
             <p className="rounded-lg bg-moss-100 px-4 py-3 text-moss-700">
-              No unmet needs right now. Every need on your caseload has a resource in the same
-              borough.
+              No unmet needs right now. Every need on your caseload has a
+              resource in the same borough.
             </p>
           )}
 
           <ul className="space-y-4">
             {findings.map((f) => {
               const org = organizations.find((o) => o.id === f.resource.orgId);
-              const affected = clients.filter((c) => f.gap.clientIds.includes(c.id));
+              const affected = clients.filter((c) =>
+                f.gap.clientIds.includes(c.id),
+              );
               return (
                 <li
                   key={`${f.need}-${f.borough}`}
@@ -128,14 +144,19 @@ function Gaps() {
                     <Badge tone="amber">{NEED_CHIPS[f.need]}</Badge>
                     <Badge tone="steel">{f.borough}</Badge>
                   </div>
-                  <p className="mt-2 text-lg font-semibold leading-snug">{f.headline}</p>
+                  <p className="mt-2 text-lg font-semibold leading-snug">
+                    {f.headline}
+                  </p>
                   <p className="mt-1 text-ink-soft">{f.detail}</p>
                   <p className="mt-2 text-[15px]">
                     <span className="font-semibold">Clients affected:</span>{" "}
                     {affected.map((c, i) => (
                       <span key={c.id}>
                         {i > 0 && ", "}
-                        <Link href={`/admin/clients/${c.id}`} className="underline">
+                        <Link
+                          href={`/admin/clients/${c.id}`}
+                          className="underline"
+                        >
                           {c.firstName} {c.lastName}
                         </Link>
                       </span>
@@ -143,7 +164,9 @@ function Gaps() {
                   </p>
 
                   <div className="mt-3 rounded-lg border border-sand-200 bg-white p-3.5">
-                    <p className="text-sm font-semibold text-ink-soft">Who could help</p>
+                    <p className="text-sm font-semibold text-ink-soft">
+                      Who could help
+                    </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{org?.name}</p>
                       <TierBadge org={org} />
@@ -157,7 +180,10 @@ function Gaps() {
                       variant="primary"
                       className="mt-3"
                       onClick={() =>
-                        setTarget({ resourceId: f.resource.id, clientIds: f.gap.clientIds })
+                        setTarget({
+                          resourceId: f.resource.id,
+                          clientIds: f.gap.clientIds,
+                        })
                       }
                     >
                       <Send className="h-4 w-4" aria-hidden />
@@ -174,8 +200,8 @@ function Gaps() {
       <Card className="mt-6">
         <SectionTitle>The numbers behind this</SectionTitle>
         <p className="mt-1 text-sm text-ink-soft">
-          Worked out by plain code, with no AI. Help that takes one trip, such as an ID or a
-          bank account, is left out.
+          Worked out by plain code, with no AI. Help that takes one trip, such
+          as an ID or a bank account, is left out.
         </p>
         {gaps.length === 0 ? (
           <p className="mt-3 text-ink-soft">No gaps found.</p>

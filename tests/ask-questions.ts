@@ -147,6 +147,19 @@ async function main() {
       continue;
     }
     const a = reply.data;
+    if (reply.prepared) {
+      // Plan B answered. It must still stand on a real source and must not
+      // invent a phone number. The AI checks are skipped.
+      const bad =
+        (a.kind === "answer" && a.sources.length === 0) ||
+        inventedPhone(a.text);
+      if (bad) failed++;
+      else skipped++;
+      console.log(
+        `${bad ? "FAIL" : "PREP"}  ${c.question}\n      [${a.kind}] ${a.text.replace(/\n/g, " ").slice(0, 200)}\n      sources: ${a.sources.map((x) => x.id).join(", ")}`,
+      );
+      continue;
+    }
     const problem =
       c.check(a) ??
       (inventedPhone(a.text)

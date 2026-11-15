@@ -27,11 +27,15 @@ import { useCaseload, useDemo } from "@/lib/demo/store";
 import { BOROUGHS, onCaseload, type Borough } from "@/lib/demo/types";
 import { resourceBriefs } from "@/lib/insights/facts";
 
+// Where a draft came from: the AI, plain rules on the server, the copy
+// saved in the browser, or the caseworker starting from nothing.
+type Source = "ai" | "prepared" | "saved" | "blank";
+
 type Phase =
   | { name: "notes" }
   | { name: "drafting" }
   | { name: "error"; message: string }
-  | { name: "review"; source: "ai" | "saved" | "blank" }
+  | { name: "review"; source: Source }
   | { name: "approved"; clientId: string; firstName: string; steps: number };
 
 const STAGES = [
@@ -56,7 +60,7 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
   const [documents, setDocuments] = useState("");
   const [phase, setPhase] = useState<Phase>({ name: "notes" });
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [lastSource, setLastSource] = useState<"ai" | "saved" | "blank">("ai");
+  const [lastSource, setLastSource] = useState<Source>("ai");
 
   const tooShort = notes.trim().length < 20;
 
@@ -72,8 +76,9 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
     const reply = await postAi<IntakeDraft>("/api/intake", body);
     if (reply.ok) {
       setDraft(toDraft(reply.data));
-      setLastSource("ai");
-      setPhase({ name: "review", source: "ai" });
+      const source: Source = reply.prepared ? "prepared" : "ai";
+      setLastSource(source);
+      setPhase({ name: "review", source });
     } else if (
       clientId === mainClientId &&
       client?.intakeNotes === MARCUS_INTAKE_NOTES
@@ -200,18 +205,22 @@ function IntakeFlow({ clientId }: { clientId: string | null }) {
               label={
                 phase.source === "ai"
                   ? "AI-drafted. Needs your review."
-                  : phase.source === "saved"
-                    ? "Saved draft. Needs your review."
-                    : "Written by you"
+                  : phase.source === "prepared"
+                    ? "Prepared without AI. Needs your review."
+                    : phase.source === "saved"
+                      ? "Saved draft. Needs your review."
+                      : "Written by you"
               }
             />
           </div>
           <p className="mt-1 text-ink-soft">
-            {phase.source === "saved"
-              ? "The AI assistant is not available right now, so this is a draft saved earlier for Marcus. Review it the same way."
-              : phase.source === "blank"
-                ? "Fill in the profile and the steps by hand."
-                : "Check every part. You can edit, reorder or remove anything. Nothing reaches the client until you approve."}
+            {phase.source === "prepared"
+              ? "The AI assistant is not available right now, so this draft was prepared without it. Check every part against your notes. Nothing reaches the client until you approve."
+              : phase.source === "saved"
+                ? "The AI assistant is not available right now, so this is a draft saved earlier for Marcus. Review it the same way."
+                : phase.source === "blank"
+                  ? "Fill in the profile and the steps by hand."
+                  : "Check every part. You can edit, reorder or remove anything. Nothing reaches the client until you approve."}
           </p>
           <div className="mt-6">
             <IntakeDraftEditor

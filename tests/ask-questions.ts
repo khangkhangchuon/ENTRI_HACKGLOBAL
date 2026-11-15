@@ -44,6 +44,14 @@ const hasSource = (a: AskAnswer, id: string) =>
 
 const CASES: Case[] = [
   {
+    question: "Can I talk to a real person?",
+    needsAi: false,
+    check: (a) =>
+      a.kind === "person" && a.sources.length === 0
+        ? null
+        : `expected the real-person reply, got ${a.kind}`,
+  },
+  {
     question: "What documents do I need for a state ID?",
     needsAi: true,
     check: (a) =>

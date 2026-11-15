@@ -106,7 +106,9 @@ export const ClientFacts = z.object({
   // Days since the caseworker sent a message that got no reply.
   unansweredMessageDays: z.number().int().min(0).max(5000).nullable(),
   waitingReferrals: z
-    .array(z.object({ to: short, daysWaiting: z.number().int().min(0).max(5000) }))
+    .array(
+      z.object({ to: short, daysWaiting: z.number().int().min(0).max(5000) }),
+    )
     .max(10),
 });
 export type ClientFacts = z.infer<typeof ClientFacts>;
@@ -204,7 +206,9 @@ export const AskRequest = z.object({
   question: z.string().trim().min(2).max(QUESTION_MAX),
   // The last few turns, so a follow-up question makes sense.
   history: z
-    .array(z.object({ role: z.enum(["user", "entri"]), text: z.string().max(1200) }))
+    .array(
+      z.object({ role: z.enum(["user", "entri"]), text: z.string().max(1200) }),
+    )
     .max(6),
   context: z.object({
     firstName: z.string().max(40),
@@ -216,7 +220,14 @@ export const AskRequest = z.object({
 });
 export type AskRequest = z.infer<typeof AskRequest>;
 
-export const ASK_KINDS = ["answer", "legal", "unknown", "off-topic", "crisis"] as const;
+export const ASK_KINDS = [
+  "answer",
+  "legal",
+  "unknown",
+  "off-topic",
+  "crisis",
+  "person",
+] as const;
 export type AskKind = (typeof ASK_KINDS)[number];
 
 // What the model writes.

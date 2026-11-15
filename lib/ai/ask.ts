@@ -1,7 +1,15 @@
 import "server-only";
 import { asSource } from "@/lib/ask/prepared";
 import { findDocs, findListings } from "@/lib/ask/retrieve";
-import { CRISIS_TEXT, isCrisis, isLegal, LEGAL_TEXT, UNKNOWN_TEXT } from "@/lib/ask/safety";
+import {
+  CRISIS_TEXT,
+  isCrisis,
+  isLegal,
+  LEGAL_TEXT,
+  PERSON_TEXT,
+  UNKNOWN_TEXT,
+  wantsPerson,
+} from "@/lib/ask/safety";
 import { draftStructured, tidyLines } from "./client";
 import { AskDraft, type AskAnswer, type AskRequest } from "./schemas";
 
@@ -23,24 +31,45 @@ Choosing kind:
 - "unknown": the question is about coming home but the passages and listings do not cover it.
 - "off-topic": the question is not about coming home, such as food tips or sports. Write one friendly sentence, then say what you can help with: ID, benefits, housing, work, a bank account, a phone, and finding help.
 - "crisis": the person may be in danger or may want to hurt themselves or someone else. Write one kind sentence only.
+- "person": the person asks to talk with a real person, such as a caseworker or someone on staff. Write one short sentence.
 
 offerAdvocate: set to true when the answer gives general information about rights at work or a record, because the person's own case may need a legal advocate. Otherwise false.`;
 
-// Crisis and clearly legal questions get a fixed, careful reply with no AI.
+// Crisis, clearly legal questions and requests for a real person get a
+// fixed, careful reply with no AI.
+const personReply = (input: AskRequest): AskAnswer => ({
+  kind: "person",
+  text: input.context.hasCaseworker ? PERSON_TEXT.connected : PERSON_TEXT.solo,
+  sources: [],
+  offerAdvocate: false,
+});
+
 export function answerWithoutAi(input: AskRequest): AskAnswer | null {
   if (isCrisis(input.question)) {
-    return { kind: "crisis", text: CRISIS_TEXT, sources: [], offerAdvocate: false };
+    return {
+      kind: "crisis",
+      text: CRISIS_TEXT,
+      sources: [],
+      offerAdvocate: false,
+    };
   }
   if (isLegal(input.question)) {
-    return { kind: "legal", text: LEGAL_TEXT, sources: [], offerAdvocate: true };
+    return {
+      kind: "legal",
+      text: LEGAL_TEXT,
+      sources: [],
+      offerAdvocate: true,
+    };
   }
+  if (wantsPerson(input.question)) return personReply(input);
   return null;
 }
 
 export async function answerQuestion(input: AskRequest): Promise<AskAnswer> {
   // A follow-up such as "how much does it cost?" leans on the question
   // before it, so both are used for the search.
-  const earlier = [...input.history].reverse().find((h) => h.role === "user")?.text ?? "";
+  const earlier =
+    [...input.history].reverse().find((h) => h.role === "user")?.text ?? "";
   const search = `${input.question} ${earlier}`.slice(0, 900);
   const docs = findDocs(search);
   const listings = findListings(search, input.listings);
@@ -53,7 +82,14 @@ export async function answerQuestion(input: AskRequest): Promise<AskAnswer> {
     JSON.stringify(input.history),
     "</earlier_turns>",
     "<passages>",
-    JSON.stringify(docs.map((d) => ({ id: d.id, title: d.title, source: d.source, text: d.text }))),
+    JSON.stringify(
+      docs.map((d) => ({
+        id: d.id,
+        title: d.title,
+        source: d.source,
+        text: d.text,
+      })),
+    ),
     "</passages>",
     "<listings>",
     JSON.stringify(listings),
@@ -63,29 +99,63 @@ export async function answerQuestion(input: AskRequest): Promise<AskAnswer> {
     "</question>",
   ].join("\n");
 
-  const draft = await draftStructured({ system: SYSTEM, user, schema: AskDraft, effort: "low" });
+  const draft = await draftStructured({
+    system: SYSTEM,
+    user,
+    schema: AskDraft,
+    effort: "low",
+  });
 
   // Fixed wording for the careful cases, whatever the model wrote.
   if (draft.kind === "crisis") {
-    return { kind: "crisis", text: CRISIS_TEXT, sources: [], offerAdvocate: false };
+    return {
+      kind: "crisis",
+      text: CRISIS_TEXT,
+      sources: [],
+      offerAdvocate: false,
+    };
   }
   if (draft.kind === "legal") {
-    return { kind: "legal", text: LEGAL_TEXT, sources: [], offerAdvocate: true };
+    return {
+      kind: "legal",
+      text: LEGAL_TEXT,
+      sources: [],
+      offerAdvocate: true,
+    };
   }
+  if (draft.kind === "person") return personReply(input);
   if (draft.kind === "unknown") {
-    return { kind: "unknown", text: UNKNOWN_TEXT, sources: [], offerAdvocate: false };
+    return {
+      kind: "unknown",
+      text: UNKNOWN_TEXT,
+      sources: [],
+      offerAdvocate: false,
+    };
   }
   if (draft.kind === "off-topic") {
-    return { kind: "off-topic", text: tidyLines(draft.text), sources: [], offerAdvocate: false };
+    return {
+      kind: "off-topic",
+      text: tidyLines(draft.text),
+      sources: [],
+      offerAdvocate: false,
+    };
   }
 
   // An answer must stand on sources that were really given to the model.
-  const allowed = new Set([...docs.map((d) => d.id), ...listings.map((l) => l.id)]);
+  const allowed = new Set([
+    ...docs.map((d) => d.id),
+    ...listings.map((l) => l.id),
+  ]);
   const sources = [...new Set(draft.sourceIds)]
     .filter((id) => allowed.has(id))
     .flatMap((id) => asSource(id, input.listings) ?? []);
   if (sources.length === 0) {
-    return { kind: "unknown", text: UNKNOWN_TEXT, sources: [], offerAdvocate: false };
+    return {
+      kind: "unknown",
+      text: UNKNOWN_TEXT,
+      sources: [],
+      offerAdvocate: false,
+    };
   }
   return {
     kind: "answer",

@@ -51,12 +51,16 @@ let nextId = 1;
 const STARTERS = [
   "What do I need to get a state ID?",
   "Can I get food stamps right away?",
-  "Which jobs hire people with a record?",
+  "Can I talk to a real person?",
   "Do I have to tell an employer about my conviction?",
 ];
 
 const smallButton =
   "inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-sand-300 bg-white px-3.5 py-2.5 text-[17px] font-semibold";
+
+// The one main action in a card, in the ember accent.
+const smallPrimary =
+  "inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-ember-500 bg-ember-600 px-3.5 py-2.5 text-[17px] font-semibold text-white";
 
 function SourceTags({ sources }: { sources: AskSource[] }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -164,6 +168,30 @@ function PeopleOptions({
   );
 }
 
+// For someone who asks for a real person. Nothing is sent until they tap.
+function PersonCard() {
+  const me = useDemo(selectMainClient);
+  const caseworker = useDemo((s) => s.caseworker);
+  const connected = onCaseload(me);
+  return (
+    <div className="mt-3 grid gap-2">
+      {connected ? (
+        <Link href="/app/messages" className={smallPrimary}>
+          <Send className="h-5 w-5" aria-hidden />
+          Message {caseworker.firstName}
+        </Link>
+      ) : (
+        <Link href="/app/caseworker" className={smallPrimary}>
+          Get a caseworker
+        </Link>
+      )}
+      <Link href="/app/find" className={smallButton}>
+        Look in Find help
+      </Link>
+    </div>
+  );
+}
+
 function CrisisCard() {
   const me = useDemo(selectMainClient);
   const caseworker = useDemo((s) => s.caseworker);
@@ -177,10 +205,7 @@ function CrisisCard() {
         {CRISIS_TEXT}
       </p>
       <div className="mt-3 grid gap-2">
-        <a
-          href="tel:988"
-          className={`${smallButton} border-ember-500 bg-ember-600 text-white`}
-        >
+        <a href="tel:988" className={smallPrimary}>
           <Phone className="h-5 w-5" aria-hidden />
           Call 988
         </a>
@@ -252,6 +277,7 @@ function Answer({ turn }: { turn: Turn }) {
           <PeopleOptions question={turn.question} legal />
         </div>
       )}
+      {a.kind === "person" && <PersonCard />}
       {a.kind === "unknown" && (
         <div className="mt-1">
           <p className="text-[17px] text-ink-soft">

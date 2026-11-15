@@ -435,39 +435,62 @@ export function AskChat() {
           </li>
         ))}
       </ol>
-      <div ref={endRef} className="scroll-mb-28" />
+      <div ref={endRef} className="scroll-mb-44" />
 
-      <form
-        className="sticky bottom-0 mt-auto flex items-end gap-2 bg-paper pb-1 pt-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          ask(text);
-        }}
-      >
-        <textarea
-          aria-label="Your question"
-          rows={2}
-          maxLength={QUESTION_MAX}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              ask(text);
-            }
+      <div className="sticky bottom-0 mt-auto bg-paper pb-1 pt-4">
+        {/* The suggestions stay on hand after the first question, in a
+            row that scrolls sideways above the box. */}
+        {turns.length > 0 && (
+          <div
+            role="group"
+            aria-label="Suggested questions"
+            className="-mx-5 mb-2.5 flex gap-2 overflow-x-auto px-5 pb-1"
+          >
+            {starters.map((s) => (
+              <button
+                key={s}
+                type="button"
+                disabled={busy}
+                onClick={() => ask(s)}
+                className="shrink-0 rounded-full border border-sand-300 bg-white px-3.5 py-2 text-left text-[16px] leading-snug disabled:opacity-50"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+        <form
+          className="flex items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            ask(text);
           }}
-          placeholder="Ask in your own words"
-          className={`${inputClass} text-lg`}
-        />
-        <button
-          type="submit"
-          disabled={!text.trim() || busy}
-          aria-label="Send"
-          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-ember-600 text-white disabled:opacity-50"
         >
-          <Send className="h-6 w-6" aria-hidden />
-        </button>
-      </form>
+          <textarea
+            aria-label="Your question"
+            rows={2}
+            maxLength={QUESTION_MAX}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                ask(text);
+              }
+            }}
+            placeholder="Ask in your own words"
+            className={`${inputClass} text-lg`}
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || busy}
+            aria-label="Send"
+            className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-ember-600 text-white disabled:opacity-50"
+          >
+            <Send className="h-6 w-6" aria-hidden />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
